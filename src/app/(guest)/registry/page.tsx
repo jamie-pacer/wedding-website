@@ -81,7 +81,7 @@ export default function RegistryPage() {
     <div 
       className="min-h-screen px-6 pt-28 pb-16"
       style={{
-        backgroundImage: "url('/Fabric Texture Background.jpg')",
+        backgroundImage: "url('/background-3.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",

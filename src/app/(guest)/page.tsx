@@ -1,16 +1,24 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, MapPin, Clock, Heart } from "lucide-react";
 import { Countdown } from "@/components/Countdown";
 
 export default function HomePage() {
+  const handleScrollDown = () => {
+    window.scrollTo({
+      top: window.innerHeight,
+      behavior: "smooth",
+    });
+  };
   return (
     <div className="bg-[var(--color-cream)]">
       {/* Hero Section - Invitation Style */}
-      <section className="relative min-h-[85vh] md:min-h-screen flex items-start justify-center overflow-hidden pt-28 md:pt-34 pb-12 md:pb-20">
+      <section className="relative min-h-[70vh] md:min-h-[85vh] flex items-start justify-center overflow-hidden pt-28 md:pt-34 pb-12 md:pb-20">
         {/* Background Image */}
         <Image
-          src="/background-2.JPG"
+          src="/background-3.png"
           alt="Wedding background"
           fill
           className="object-cover animate-scale-out"
@@ -19,12 +27,12 @@ export default function HomePage() {
 
         {/* Invitation Card */}
         <div className="relative z-10 mx-4 md:mx-6 animate-float-in">
-          <div className="bg-white/95 backdrop-blur-sm px-8 py-10 md:px-14 md:py-14 lg:px-18 lg:py-16 max-w-lg md:max-w-xl text-center shadow-[0_25px_60px_-12px_rgba(0,0,0,0.35)]">
+          <div className="bg-white/95 backdrop-blur-sm px-8 py-9 md:px-14 md:py-13 lg:px-18 lg:py-15 max-w-lg md:max-w-xl text-center shadow-[0_25px_60px_-12px_rgba(0,0,0,0.35)]">
             {/* Thin elegant border inside the card */}
             <div className="absolute inset-4 md:inset-6 border border-[var(--color-dusty-rose)]/40 pointer-events-none"></div>
             
             {/* Top ornament */}
-            <p className="text-[var(--color-warm-gray)] text-xs md:text-sm tracking-[0.3em] uppercase mb-8">
+            <p className="text-[var(--color-warm-gray)] text-xs md:text-sm tracking-[0.3em] uppercase mb-7">
               Together with their families
             </p>
 
@@ -36,20 +44,20 @@ export default function HomePage() {
             </h1>
 
             {/* Simple divider */}
-            <div className="flex items-center justify-center gap-4 my-8">
+            <div className="flex items-center justify-center gap-4 my-7">
               <div className="h-px w-12 bg-[var(--color-dusty-rose)]/60"></div>
               <div className="w-1.5 h-1.5 bg-[var(--color-dusty-rose)]/60 rotate-45"></div>
               <div className="h-px w-12 bg-[var(--color-dusty-rose)]/60"></div>
             </div>
 
             {/* Invitation text */}
-            <p className="text-[var(--color-warm-gray)] text-sm md:text-base tracking-wide mb-6">
+            <p className="text-[var(--color-warm-gray)] text-sm md:text-base tracking-wide mb-5">
               Request the pleasure of your company<br />
               at their wedding celebration
             </p>
 
             {/* Date */}
-            <p className="text-2xl md:text-3xl text-[var(--color-charcoal)] mb-6">
+            <p className="text-2xl md:text-3xl text-[var(--color-charcoal)] mb-5">
               October 24, 2026
             </p>
 
@@ -63,8 +71,21 @@ export default function HomePage() {
               </p>
             </div>
 
+            {/* Dress Code */}
+            <div className="mt-7 relative group">
+              <p className="text-[var(--color-charcoal)] text-sm md:text-base tracking-wide">
+                <span className="font-medium">Dress Code:</span> <span className="font-semibold">Summer semi-formal</span>
+              </p>
+              
+              {/* Tooltip */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-4 py-2 bg-[var(--color-charcoal)] text-white text-xs rounded shadow-lg whitespace-normal opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 max-w-[200px] text-center">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[var(--color-charcoal)]"></div>
+                Whimsical, colourful attire encouraged – think linen suits and flowy dresses.
+              </div>
+            </div>
+
             {/* RSVP Button */}
-            <div className="mt-8">
+            <div className="mt-6">
               <Link 
                 href="/rsvp" 
                 className="inline-block px-8 py-2.5 border border-[var(--color-charcoal)] text-[var(--color-charcoal)] text-xs tracking-[0.2em] uppercase hover:bg-[var(--color-charcoal)] hover:text-white transition-all duration-300"
@@ -76,11 +97,15 @@ export default function HomePage() {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <svg className="w-6 h-6 text-[var(--color-warm-gray)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <button
+          onClick={handleScrollDown}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer hover:scale-110 transition-transform"
+          aria-label="Scroll down"
+        >
+          <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 9l6 6 6-6" />
           </svg>
-        </div>
+        </button>
       </section>
 
       {/* Engagement Photo Section */}
@@ -89,17 +114,15 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Photo */}
             <div className="relative">
-              <div className="aspect-[4/5] bg-[var(--color-champagne)] rounded-2xl overflow-hidden relative">
+              <div className="aspect-[4/5] overflow-hidden relative">
                 <Image
-                  src="/engagement-photo.png"
+                  src="/engagement-watercolour.png"
                   alt="Natalie and James engagement photo"
                   fill
                   className="object-cover"
                   priority
                 />
               </div>
-              {/* Decorative Frame */}
-              <div className="absolute -inset-4 border-2 border-[var(--color-dusty-rose)] rounded-2xl -z-10 opacity-50"></div>
             </div>
 
             {/* Our Story */}
@@ -127,54 +150,72 @@ export default function HomePage() {
       </section>
 
       {/* Running Order Section */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-4xl text-[var(--color-charcoal)] mb-4">
-            Running Order
-          </h2>
-          <div className="floral-divider w-24 mx-auto mb-12"></div>
-
-          {/* Horizontal Timeline */}
-          <div className="relative">
-            {/* Horizontal line */}
-            <div className="hidden md:block absolute top-7 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--color-dusty-rose)] via-[var(--color-dusty-blue)] to-[var(--color-slate-blue)]"></div>
-
-            {/* Timeline Items */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4">
-              {/* Arrival */}
-              <div className="flex flex-col items-center">
-                <div className="relative z-10 w-14 h-14 bg-[var(--color-dusty-rose)] rounded-full flex items-center justify-center shadow-lg mb-4">
-                  <Calendar className="w-6 h-6 text-white" />
-                </div>
-                <p className="text-2xl text-[var(--color-charcoal)] mb-1">15:30</p>
-                <p className="text-[var(--color-warm-gray)] font-medium">Arrival</p>
+      <section 
+        className="py-20 px-6"
+        style={{
+          backgroundImage: "url('/background-3.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="max-w-5xl mx-auto">
+          <div className="bg-white/95 backdrop-blur-sm border-2 border-[var(--color-dusty-rose)]/30 p-10 md:p-16 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.15)] relative">
+            {/* Elegant inner border decoration */}
+            <div className="absolute inset-4 md:inset-6 border border-[var(--color-dusty-rose)]/40 pointer-events-none"></div>
+            
+            <div className="relative z-10 text-center">
+              <h2 className="text-4xl md:text-5xl text-[var(--color-charcoal)] mb-6 font-serif tracking-wide">
+                Running Order
+              </h2>
+              <div className="flex items-center justify-center gap-3 mb-12">
+                <div className="h-px w-16 bg-[var(--color-dusty-rose)]/40"></div>
+                <div className="w-1.5 h-1.5 bg-[var(--color-dusty-rose)]/60 rotate-45"></div>
+                <div className="h-px w-16 bg-[var(--color-dusty-rose)]/40"></div>
               </div>
 
-              {/* Ceremony */}
-              <div className="flex flex-col items-center">
-                <div className="relative z-10 w-14 h-14 bg-[var(--color-dusty-blue)] rounded-full flex items-center justify-center shadow-lg mb-4">
-                  <Heart className="w-6 h-6 text-white" />
-                </div>
-                <p className="text-2xl text-[var(--color-charcoal)] mb-1">16:30</p>
-                <p className="text-[var(--color-warm-gray)] font-medium">Ceremony Starts</p>
-              </div>
+              {/* Horizontal Timeline */}
+              <div className="relative">
+                {/* Horizontal line */}
+                <div className="hidden md:block absolute top-7 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--color-dusty-rose)]/40 via-[var(--color-dusty-blue)]/40 to-[var(--color-slate-blue)]/40"></div>
 
-              {/* Cocktails */}
-              <div className="flex flex-col items-center">
-                <div className="relative z-10 w-14 h-14 bg-[var(--color-sage)] rounded-full flex items-center justify-center shadow-lg mb-4">
-                  <Clock className="w-6 h-6 text-white" />
-                </div>
-                <p className="text-2xl text-[var(--color-charcoal)] mb-1">17:00</p>
-                <p className="text-[var(--color-warm-gray)] font-medium text-center">Cocktails &<br/>Lawn Games</p>
-              </div>
+                {/* Timeline Items */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4">
+                  {/* Arrival */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative z-10 w-14 h-14 bg-[var(--color-dusty-rose)] rounded-full flex items-center justify-center shadow-md mb-4 border-2 border-white">
+                      <Calendar className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-2xl text-[var(--color-charcoal)] mb-1 font-semibold">15:30</p>
+                    <p className="text-[var(--color-warm-gray)] font-medium">Arrival</p>
+                  </div>
 
-              {/* Dinner */}
-              <div className="flex flex-col items-center">
-                <div className="relative z-10 w-14 h-14 bg-[var(--color-slate-blue)] rounded-full flex items-center justify-center shadow-lg mb-4">
-                  <MapPin className="w-6 h-6 text-white" />
+                  {/* Ceremony */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative z-10 w-14 h-14 bg-[var(--color-dusty-blue)] rounded-full flex items-center justify-center shadow-md mb-4 border-2 border-white">
+                      <Heart className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-2xl text-[var(--color-charcoal)] mb-1 font-semibold">16:30</p>
+                    <p className="text-[var(--color-warm-gray)] font-medium">Ceremony Starts</p>
+                  </div>
+
+                  {/* Cocktails */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative z-10 w-14 h-14 bg-[var(--color-sage)] rounded-full flex items-center justify-center shadow-md mb-4 border-2 border-white">
+                      <Clock className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-2xl text-[var(--color-charcoal)] mb-1 font-semibold">17:00</p>
+                    <p className="text-[var(--color-warm-gray)] font-medium text-center">Cocktails &<br/>Lawn Games</p>
+                  </div>
+
+                  {/* Dinner */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative z-10 w-14 h-14 bg-[var(--color-slate-blue)] rounded-full flex items-center justify-center shadow-md mb-4 border-2 border-white">
+                      <MapPin className="w-6 h-6 text-white" />
+                    </div>
+                <p className="text-2xl text-[var(--color-charcoal)] mb-1 font-semibold">19:00</p>
+                <p className="text-[var(--color-warm-gray)] font-medium text-center">Reception Starts</p>
+                  </div>
                 </div>
-                <p className="text-2xl text-[var(--color-charcoal)] mb-1">19:30</p>
-                <p className="text-[var(--color-warm-gray)] font-medium text-center">Dinner &<br/>Speeches</p>
               </div>
             </div>
           </div>
@@ -182,7 +223,7 @@ export default function HomePage() {
       </section>
 
       {/* Countdown Section */}
-      <section className="relative py-32 md:py-40 px-6 min-h-[600px] md:min-h-[700px] flex items-center justify-center overflow-hidden">
+      <section className="relative py-16 md:py-32 lg:py-40 px-4 sm:px-6 min-h-[500px] md:min-h-[600px] lg:min-h-[700px] flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <Image
           src="/watercolour.png"
@@ -192,40 +233,31 @@ export default function HomePage() {
           priority
         />
         
-        {/* Subtle overlay for better text contrast */}
-        <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
-        
         {/* Content */}
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl px-8 py-10 md:px-12 md:py-14 shadow-lg border border-white/50">
-            <h2 className="text-4xl md:text-5xl text-[var(--color-charcoal)] mb-4 font-semibold drop-shadow-sm">
-              Counting Down
-            </h2>
-            <p className="text-[var(--color-warm-gray)] mb-8 font-light text-lg">
-              Until we say &ldquo;I do&rdquo;
-            </p>
+        <div className="relative z-10 max-w-4xl mx-auto w-full">
+          <div className="bg-white/95 backdrop-blur-sm border-2 border-[var(--color-dusty-rose)]/30 p-6 sm:p-8 md:p-12 lg:p-16 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.15)] relative mx-2 sm:mx-4">
+            {/* Elegant inner border decoration */}
+            <div className="absolute inset-3 sm:inset-4 md:inset-6 border border-[var(--color-dusty-rose)]/40 pointer-events-none"></div>
             
-            <Countdown />
+            <div className="relative z-10 text-center">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl text-[var(--color-charcoal)] mb-4 sm:mb-6 font-serif tracking-wide">
+                Counting Down
+              </h2>
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                <div className="h-px w-12 sm:w-16 bg-[var(--color-dusty-rose)]/40"></div>
+                <div className="w-1.5 h-1.5 bg-[var(--color-dusty-rose)]/60 rotate-45"></div>
+                <div className="h-px w-12 sm:w-16 bg-[var(--color-dusty-rose)]/40"></div>
+              </div>
+              <p className="text-[var(--color-warm-gray)] mb-6 sm:mb-8 text-base sm:text-lg tracking-wide px-2">
+                Until we say &ldquo;I do&rdquo;
+              </p>
+              
+              <Countdown />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* RSVP Call to Action */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-4xl text-[var(--color-charcoal)] mb-4">
-            Will You Join Us?
-          </h2>
-          <div className="floral-divider w-24 mx-auto mb-6"></div>
-          <p className="text-[var(--color-warm-gray)] mb-8 leading-relaxed">
-            We would be honored to have you celebrate this special day with us. 
-            Please let us know if you can make it by responding to our invitation.
-          </p>
-          <Link href="/rsvp" className="btn-primary inline-block">
-            Respond Now
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }

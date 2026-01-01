@@ -14,6 +14,7 @@ interface Guest {
   id: string;
   name: string;
   email: string | null;
+  hasRsvp?: boolean;
 }
 
 export default function RSVPPage() {
@@ -42,6 +43,8 @@ export default function RSVPPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
   
@@ -66,14 +69,29 @@ export default function RSVPPage() {
       if (!supabase) return;
 
       setIsSearching(true);
-      const { data, error } = await supabase
+      const { data: guestsData, error: guestsError } = await supabase
         .from("guests")
         .select("id, name, email")
         .ilike("name", `%${searchQuery}%`)
         .limit(5);
 
-      if (!error && data) {
-        setSearchResults(data);
+      if (!guestsError && guestsData) {
+        // Check which guests have already submitted RSVPs
+        const guestIds = guestsData.map(g => g.id);
+        const { data: rsvpsData } = await supabase
+          .from("rsvps")
+          .select("guest_id")
+          .in("guest_id", guestIds);
+
+        const rsvpGuestIds = new Set(rsvpsData?.map(r => r.guest_id) || []);
+        
+        // Add hasRsvp flag to each guest
+        const guestsWithRsvpStatus = guestsData.map(guest => ({
+          ...guest,
+          hasRsvp: rsvpGuestIds.has(guest.id)
+        }));
+
+        setSearchResults(guestsWithRsvpStatus);
         setShowDropdown(true);
       }
       setIsSearching(false);
@@ -113,10 +131,25 @@ export default function RSVPPage() {
         query = query.not("id", "in", `(${excludeIds.join(",")})`);
       }
 
-      const { data, error } = await query;
+      const { data: guestsData, error: guestsError } = await query;
 
-      if (!error && data) {
-        setAdditionalSearchResults(data);
+      if (!guestsError && guestsData) {
+        // Check which guests have already submitted RSVPs
+        const guestIds = guestsData.map(g => g.id);
+        const { data: rsvpsData } = await supabase
+          .from("rsvps")
+          .select("guest_id")
+          .in("guest_id", guestIds);
+
+        const rsvpGuestIds = new Set(rsvpsData?.map(r => r.guest_id) || []);
+        
+        // Add hasRsvp flag to each guest
+        const guestsWithRsvpStatus = guestsData.map(guest => ({
+          ...guest,
+          hasRsvp: rsvpGuestIds.has(guest.id)
+        }));
+
+        setAdditionalSearchResults(guestsWithRsvpStatus);
         setShowAdditionalDropdown(true);
       }
       setIsSearchingAdditional(false);
@@ -126,7 +159,7 @@ export default function RSVPPage() {
     return () => clearTimeout(debounce);
   }, [additionalSearchQuery, selectedGuest, formData.additionalGuests]);
 
-  // Close dropdowns when clicking outside
+  // Close dropdowns when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -137,8 +170,19 @@ export default function RSVPPage() {
       }
     };
 
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowDropdown(false);
+        setShowAdditionalDropdown(false);
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, []);
 
   const handleSelectGuest = (guest: Guest) => {
@@ -178,11 +222,26 @@ export default function RSVPPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedGuest || !formData.email) return;
+    setError(null);
+    
+    if (!selectedGuest) {
+      setError("Please select your name from the guest list.");
+      return;
+    }
+    
+    if (!formData.email) {
+      setError("Please enter your email address.");
+      return;
+    }
+    
+    if (!formData.attending) {
+      setError("Please indicate whether you will be attending.");
+      return;
+    }
     
     const supabase = getSupabase();
     if (!supabase) {
-      alert("Unable to connect. Please refresh the page.");
+      setError("Unable to connect. Please refresh the page and try again.");
       return;
     }
     
@@ -195,7 +254,7 @@ export default function RSVPPage() {
       .eq("id", selectedGuest.id);
 
     // Create RSVP record for primary guest
-    const { error } = await supabase.from("rsvps").insert({
+    const { error: insertError } = await supabase.from("rsvps").insert({
       guest_id: selectedGuest.id,
       name: selectedGuest.name,
       email: formData.email,
@@ -207,15 +266,19 @@ export default function RSVPPage() {
       additional_guests: JSON.parse(JSON.stringify(formData.additionalGuests)),
     });
 
-    if (error) {
-      console.error("RSVP Error:", error);
-      alert("There was an error submitting your RSVP. Please try again.");
+    if (insertError) {
+      console.error("RSVP Error:", insertError);
+      setError("There was an error submitting your RSVP. Please try again.");
       setIsSubmitting(false);
       return;
     }
     
     setIsSubmitting(false);
     setIsSubmitted(true);
+    // Trigger confetti animation
+    setShowConfetti(true);
+    // Clean up confetti after animation
+    setTimeout(() => setShowConfetti(false), 3000);
   };
 
   const removeGuest = (index: number) => {
@@ -234,34 +297,117 @@ export default function RSVPPage() {
 
   const totalGuests = 1 + formData.additionalGuests.length;
 
+  // Get missing required fields for tooltip
+  const getMissingFields = () => {
+    const missing: string[] = [];
+    if (!selectedGuest) missing.push("Select your name");
+    if (!formData.email) missing.push("Enter your email");
+    if (!formData.attending) missing.push("Select attendance");
+    return missing;
+  };
+
+  const missingFields = getMissingFields();
+  const isFormIncomplete = missingFields.length > 0;
+
   if (isSubmitted) {
     return (
       <div 
-        className="min-h-screen px-6 pt-28 pb-16 flex items-center justify-center"
+        className="min-h-screen px-6 pt-28 pb-16 flex items-center justify-center relative overflow-hidden"
         style={{
-          backgroundImage: "url('/Fabric Texture Background.jpg')",
+          backgroundImage: "url('/background-3.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "fixed",
         }}
       >
-        <div className="max-w-md mx-auto">
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 md:p-12 shadow-lg text-center animate-fade-in">
-            <div className="w-20 h-20 bg-[var(--color-sage)] rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-4xl text-[var(--color-charcoal)] mb-4">
-              Thank You!
-            </h1>
-            <p className="text-[var(--color-warm-gray)] mb-6">
-              {formData.attending === "yes" 
-                ? "We're so excited to celebrate with you! You'll receive a confirmation email shortly."
-                : "We're sorry you can't make it. Thank you for letting us know."}
-            </p>
-            <div className="flex items-center justify-center gap-2 text-[var(--color-dusty-rose)]">
-              <Heart className="w-5 h-5 fill-current" />
-              <span>Natalie & James</span>
-              <Heart className="w-5 h-5 fill-current" />
+        {/* Confetti Animation */}
+        {showConfetti && formData.attending === "yes" && (
+          <div className="fixed inset-0 pointer-events-none z-50">
+            {[...Array(50)].map((_, i) => {
+              const colors = [
+                'var(--color-dusty-rose)',
+                'var(--color-sage)',
+                'var(--color-dusty-blue)',
+                'var(--color-champagne)',
+                'var(--color-slate-blue)'
+              ];
+              const color = colors[Math.floor(Math.random() * colors.length)];
+              const left = Math.random() * 100;
+              const delay = Math.random() * 0.5;
+              const duration = 2 + Math.random() * 1;
+              
+              return (
+                <div
+                  key={i}
+                  className="absolute w-2 h-2 rounded-sm"
+                  style={{
+                    left: `${left}%`,
+                    top: '-10px',
+                    backgroundColor: color,
+                    animation: `confetti-fall ${duration}s ease-out forwards`,
+                    animationDelay: `${delay}s`,
+                    transform: `rotate(${Math.random() * 360}deg)`,
+                  }}
+                />
+              );
+            })}
+            {[...Array(30)].map((_, i) => {
+              const colors = [
+                'var(--color-dusty-rose)',
+                'var(--color-sage)',
+                'var(--color-dusty-blue)',
+                'var(--color-champagne)',
+                'var(--color-slate-blue)'
+              ];
+              const color = colors[Math.floor(Math.random() * colors.length)];
+              const left = Math.random() * 100;
+              const delay = Math.random() * 0.5;
+              const duration = 2.5 + Math.random() * 1;
+              
+              return (
+                <div
+                  key={`circle-${i}`}
+                  className="absolute w-3 h-3 rounded-full"
+                  style={{
+                    left: `${left}%`,
+                    top: '-10px',
+                    backgroundColor: color,
+                    animation: `confetti-fall ${duration}s ease-out forwards`,
+                    animationDelay: `${delay}s`,
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
+        
+        <div className="max-w-md mx-auto animate-float-in relative z-10">
+          <div className="bg-white/95 backdrop-blur-sm border-2 border-[var(--color-dusty-rose)]/30 p-12 md:p-16 text-center shadow-[0_25px_60px_-12px_rgba(0,0,0,0.35)]">
+            {/* Elegant border decoration */}
+            <div className="absolute inset-4 md:inset-6 border border-[var(--color-dusty-rose)]/40 pointer-events-none"></div>
+            
+            <div className="relative z-10">
+              <div className="w-16 h-16 border-2 border-[var(--color-dusty-rose)] flex items-center justify-center mx-auto mb-6">
+                <Check className="w-8 h-8 text-[var(--color-dusty-rose)]" />
+              </div>
+              <h1 className="text-4xl md:text-5xl text-[var(--color-charcoal)] mb-6 font-serif">
+                Thank You
+              </h1>
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <div className="h-px w-12 bg-[var(--color-dusty-rose)]/40"></div>
+                <div className="w-1.5 h-1.5 bg-[var(--color-dusty-rose)]/60 rotate-45"></div>
+                <div className="h-px w-12 bg-[var(--color-dusty-rose)]/40"></div>
+              </div>
+              <p className="text-[var(--color-warm-gray)] mb-8 leading-relaxed text-lg">
+                {formData.attending === "yes" 
+                  ? "We're so excited to celebrate with you!"
+                  : "We're sorry you can't make it. Thank you for letting us know."}
+              </p>
+              <div className="flex items-center justify-center gap-2 text-[var(--color-dusty-rose)] font-serif text-lg">
+                <Heart className="w-4 h-4 fill-current" />
+                <span>Natalie & James</span>
+                <Heart className="w-4 h-4 fill-current" />
+              </div>
             </div>
           </div>
         </div>
@@ -273,40 +419,59 @@ export default function RSVPPage() {
     <div 
       className="min-h-screen px-6 pt-28 pb-16"
       style={{
-        backgroundImage: "url('/Fabric Texture Background.jpg')",
+        backgroundImage: "url('/background-3.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
       }}
     >
-      <div className="max-w-4xl mx-auto">
-        {/* Content card with backdrop */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 md:p-12 shadow-lg">
-          {/* Header */}
-          <div className="text-center mb-10">
-            <h1 className="text-5xl text-[var(--color-charcoal)] mb-4">
-              RSVP
-            </h1>
-            <div className="floral-divider w-24 mx-auto mb-6"></div>
-            <p className="text-[var(--color-warm-gray)]">
-              Please respond by 24th July 2026
-            </p>
-          </div>
+      <div className="max-w-3xl mx-auto animate-float-in">
+        {/* Content card - Classic elegant style */}
+        <div className="bg-white/95 backdrop-blur-sm border-2 border-[var(--color-dusty-rose)]/30 p-10 md:p-16 shadow-[0_25px_60px_-12px_rgba(0,0,0,0.35)] relative">
+          {/* Elegant inner border decoration */}
+          <div className="absolute inset-4 md:inset-6 border border-[var(--color-dusty-rose)]/40 pointer-events-none"></div>
+          
+          <div className="relative z-10">
+            {/* Header */}
+            <div className="text-center mb-12">
+              <h1 className="text-5xl md:text-6xl text-[var(--color-charcoal)] mb-6 font-serif tracking-wide">
+                RSVP
+              </h1>
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="h-px w-16 bg-[var(--color-dusty-rose)]/40"></div>
+                <div className="w-1.5 h-1.5 bg-[var(--color-dusty-rose)]/60 rotate-45"></div>
+                <div className="h-px w-16 bg-[var(--color-dusty-rose)]/40"></div>
+              </div>
+              <p className="text-[var(--color-warm-gray)] text-lg tracking-wide">
+                Please respond by 24th July 2026
+              </p>
+            </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-8" noValidate>
+            {/* Error Message */}
+            {error && (
+              <div 
+                role="alert" 
+                aria-live="assertive"
+                className="p-4 border-2 border-red-300 bg-red-50 text-red-700"
+              >
+                <p className="font-medium">{error}</p>
+              </div>
+            )}
+            
             {/* Guest Search / Selection */}
             <div className="space-y-2" ref={searchRef}>
-              <label className="block text-[var(--color-charcoal)] font-medium">
-                Your Name <span className="text-[var(--color-dusty-rose)]">*</span>
+              <label htmlFor="guest-search" className="block text-[var(--color-charcoal)] font-medium">
+                Your Name <span className="text-[var(--color-dusty-rose)]" aria-label="required">*</span>
               </label>
               
               {selectedGuest ? (
-                <div className="p-4 bg-[var(--color-ivory)] rounded-lg flex items-center justify-between">
-                  <p className="font-medium text-[var(--color-charcoal)]">{selectedGuest.name}</p>
+                <div className="px-4 py-2.5 border-2 border-[var(--color-dusty-rose)]/20 bg-[var(--color-cream)]/50 flex items-center justify-between min-h-[42px]">
+                  <p className="font-medium text-[var(--color-charcoal)] leading-normal">{selectedGuest.name}</p>
                   <button
                     type="button"
                     onClick={handleClearSelection}
-                    className="text-sm text-[var(--color-dusty-blue)] hover:underline"
+                    className="text-sm text-[var(--color-dusty-rose)] hover:text-[var(--color-charcoal)] transition-colors underline decoration-[var(--color-dusty-rose)]/30 hover:decoration-[var(--color-dusty-rose)]"
                   >
                     Change
                   </button>
@@ -314,47 +479,74 @@ export default function RSVPPage() {
               ) : (
                 <>
                   <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-warm-gray)]" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-warm-gray)] pointer-events-none" aria-hidden="true" />
                     <input
+                      id="guest-search"
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border border-[var(--color-light-gray)] rounded-lg bg-white focus:border-[var(--color-dusty-blue)] transition-colors"
+                      className="w-full pl-12 pr-4 py-2.5 border-2 border-[var(--color-light-gray)] bg-white focus:border-[var(--color-dusty-rose)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 transition-colors text-[var(--color-charcoal)] placeholder:text-[var(--color-warm-gray)]/60 leading-[1.5]"
                       placeholder="Start typing your name..."
+                      aria-label="Search for your name"
+                      aria-expanded={showDropdown}
+                      aria-autocomplete="list"
+                      aria-controls="guest-results"
+                      autoComplete="off"
+                      style={{ lineHeight: '1.5' }}
                     />
                     {isSearching && (
                       <div className="absolute right-4 top-1/2 -translate-y-1/2">
                         <div className="w-5 h-5 border-2 border-[var(--color-dusty-blue)]/30 border-t-[var(--color-dusty-blue)] rounded-full animate-spin"></div>
                       </div>
                     )}
-                  </div>
-                  
-                  {/* Dropdown Results */}
-                  {showDropdown && searchResults.length > 0 && (
-                    <div className="bg-white border border-[var(--color-light-gray)] rounded-lg shadow-lg overflow-hidden">
-                      {searchResults.map((guest) => (
-                        <button
-                          key={guest.id}
-                          type="button"
-                          onClick={() => handleSelectGuest(guest)}
-                          className="w-full px-4 py-3 text-left hover:bg-[var(--color-ivory)] transition-colors border-b border-[var(--color-light-gray)] last:border-b-0"
-                        >
-                          <span className="font-medium text-[var(--color-charcoal)]">{guest.name}</span>
-                        </button>
+                    
+                    {/* Dropdown Results - Overlay */}
+                    {showDropdown && searchResults.length > 0 && (
+                      <ul
+                        id="guest-results"
+                        role="listbox"
+                        className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-[var(--color-light-gray)] shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden z-50 max-h-60 overflow-y-auto"
+                        aria-label="Search results"
+                      >
+                      {searchResults.map((guest, index) => (
+                        <li key={guest.id} role="option" aria-selected={false}>
+                          {guest.hasRsvp ? (
+                            <div className="w-full px-5 py-3 flex items-center justify-between border-b border-[var(--color-light-gray)]/50 last:border-b-0">
+                              <span className="font-medium text-[var(--color-text-light)]">{guest.name}</span>
+                              <span className="text-xs text-[var(--color-text-light)] italic">RSVP Sent</span>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectGuest(guest)}
+                              className="w-full px-5 py-3 text-left hover:bg-[var(--color-cream)]/50 focus:bg-[var(--color-cream)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 transition-colors border-b border-[var(--color-light-gray)]/50 last:border-b-0"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  handleSelectGuest(guest);
+                                }
+                              }}
+                            >
+                              <span className="font-medium text-[var(--color-charcoal)]">{guest.name}</span>
+                            </button>
+                          )}
+                        </li>
                       ))}
-                    </div>
-                  )}
+                      </ul>
+                    )}
 
-                  {showDropdown && searchQuery.length >= 2 && searchResults.length === 0 && !isSearching && (
-                    <div className="p-4 bg-[var(--color-ivory)] rounded-lg text-center">
-                      <p className="text-[var(--color-warm-gray)]">
-                        No guests found matching &ldquo;{searchQuery}&rdquo;
-                      </p>
-                      <p className="text-sm text-[var(--color-text-light)] mt-1">
-                        Please check the spelling or contact us if you think this is an error.
-                      </p>
-                    </div>
-                  )}
+                    {/* No results message - Overlay */}
+                    {showDropdown && searchQuery.length >= 2 && searchResults.length === 0 && !isSearching && (
+                      <div className="absolute top-full left-0 right-0 mt-1 p-5 border-2 border-[var(--color-light-gray)] bg-[var(--color-cream)]/30 text-center z-50" role="status" aria-live="polite">
+                        <p className="text-[var(--color-warm-gray)]">
+                          No guests found matching &ldquo;{searchQuery}&rdquo;
+                        </p>
+                        <p className="text-sm text-[var(--color-text-light)] mt-2">
+                          Please check the spelling or contact us if you think this is an error.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </div>
@@ -372,18 +564,23 @@ export default function RSVPPage() {
                 id="email"
                 required
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 border border-[var(--color-light-gray)] rounded-lg bg-white focus:border-[var(--color-dusty-blue)] transition-colors"
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value });
+                  setError(null);
+                }}
+                className="w-full px-4 py-2.5 border-2 border-[var(--color-light-gray)] bg-white focus:border-[var(--color-dusty-rose)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 transition-colors text-[var(--color-charcoal)] placeholder:text-[var(--color-warm-gray)]/60 leading-normal"
                 placeholder="your@email.com"
+                aria-required="true"
+                autoComplete="email"
               />
             </div>
 
             {/* Attending */}
-            <div className="space-y-4">
-              <label className="block text-[var(--color-charcoal)] font-medium">
-                Will you be attending? <span className="text-[var(--color-dusty-rose)]">*</span>
-              </label>
-              <div className="flex gap-4">
+            <fieldset className="space-y-4">
+              <legend className="block text-[var(--color-charcoal)] font-medium mb-2">
+                Will you be attending? <span className="text-[var(--color-dusty-rose)]" aria-label="required">*</span>
+              </legend>
+              <div className="flex gap-4" role="radiogroup" aria-required="true">
                 <label className="flex-1">
                   <input
                     type="radio"
@@ -394,8 +591,8 @@ export default function RSVPPage() {
                     className="sr-only peer"
                     required
                   />
-                  <div className="w-full py-4 px-6 text-center border-2 border-[var(--color-light-gray)] rounded-lg cursor-pointer transition-all peer-checked:border-[var(--color-sage)] peer-checked:bg-[var(--color-sage)]/10 hover:border-[var(--color-sage)]">
-                    <span className="font-medium text-[var(--color-charcoal)]">Joyfully Accept</span>
+                  <div className="w-full py-5 px-6 text-center border-2 border-[var(--color-light-gray)] bg-white cursor-pointer transition-all peer-checked:border-[var(--color-sage)] peer-checked:bg-[var(--color-cream)]/30 hover:border-[var(--color-sage)]/50 peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--color-dusty-rose)]/20">
+                    <span className="font-medium text-[var(--color-charcoal)] tracking-wide">Joyfully Accept</span>
                   </div>
                 </label>
                 <label className="flex-1">
@@ -404,15 +601,19 @@ export default function RSVPPage() {
                     name="attending"
                     value="no"
                     checked={formData.attending === "no"}
-                    onChange={(e) => setFormData({ ...formData, attending: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, attending: e.target.value });
+                      setError(null);
+                    }}
                     className="sr-only peer"
+                    aria-label="Regretfully Decline"
                   />
-                  <div className="w-full py-4 px-6 text-center border-2 border-[var(--color-light-gray)] rounded-lg cursor-pointer transition-all peer-checked:border-[var(--color-dusty-rose)] peer-checked:bg-[var(--color-dusty-rose)]/10 hover:border-[var(--color-dusty-rose)]">
-                    <span className="font-medium text-[var(--color-charcoal)]">Regretfully Decline</span>
+                  <div className="w-full py-5 px-6 text-center border-2 border-[var(--color-light-gray)] bg-white cursor-pointer transition-all peer-checked:border-[var(--color-dusty-rose)] peer-checked:bg-[var(--color-cream)]/30 hover:border-[var(--color-dusty-rose)]/50 peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--color-dusty-rose)]/20">
+                    <span className="font-medium text-[var(--color-charcoal)] tracking-wide">Regretfully Decline</span>
                   </div>
                 </label>
               </div>
-            </div>
+            </fieldset>
 
             {/* Additional Guests - Only show if attending */}
             {formData.attending === "yes" && (
@@ -434,15 +635,16 @@ export default function RSVPPage() {
                   
                   {/* Added guests */}
                   {formData.additionalGuests.map((guest, index) => (
-                    <div key={guest.id} className="p-4 bg-[var(--color-ivory)] rounded-lg space-y-3">
+                    <div key={guest.id} className="p-5 border-2 border-[var(--color-light-gray)] bg-[var(--color-cream)]/30 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-[var(--color-charcoal)]">
+                        <span className="font-medium text-[var(--color-charcoal)] text-lg">
                           {guest.name}
                         </span>
                         <button
                           type="button"
                           onClick={() => removeGuest(index)}
-                          className="text-[var(--color-dusty-rose)] hover:text-red-600 transition-colors"
+                          className="text-[var(--color-dusty-rose)] hover:text-[var(--color-charcoal)] focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 rounded transition-colors"
+                          aria-label={`Remove ${guest.name}`}
                         >
                           <Minus className="w-5 h-5" />
                         </button>
@@ -451,8 +653,9 @@ export default function RSVPPage() {
                         type="text"
                         value={guest.dietaryRequirements}
                         onChange={(e) => updateGuestDietary(index, e.target.value)}
-                        className="w-full px-4 py-2 border border-[var(--color-light-gray)] rounded-lg bg-white"
+                        className="w-full px-4 py-2.5 border-2 border-[var(--color-light-gray)] bg-white focus:border-[var(--color-dusty-rose)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 transition-colors leading-normal"
                         placeholder="Dietary requirements (if any)"
+                        aria-label={`Dietary requirements for ${guest.name}`}
                       />
                     </div>
                   ))}
@@ -466,40 +669,52 @@ export default function RSVPPage() {
                           type="text"
                           value={additionalSearchQuery}
                           onChange={(e) => setAdditionalSearchQuery(e.target.value)}
-                          className="w-full pl-12 pr-4 py-3 border border-[var(--color-light-gray)] rounded-lg bg-white focus:border-[var(--color-dusty-blue)] transition-colors"
+                          className="w-full pl-12 pr-4 py-2.5 border-2 border-[var(--color-light-gray)] bg-white focus:border-[var(--color-dusty-rose)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 transition-colors leading-normal"
                           placeholder="Search for guest..."
                           autoFocus
+                          aria-label="Search for additional guest"
+                          aria-expanded={showAdditionalDropdown}
+                          aria-autocomplete="list"
+                          autoComplete="off"
                         />
                         {isSearchingAdditional && (
                           <div className="absolute right-4 top-1/2 -translate-y-1/2">
                             <div className="w-5 h-5 border-2 border-[var(--color-dusty-blue)]/30 border-t-[var(--color-dusty-blue)] rounded-full animate-spin"></div>
                           </div>
                         )}
-                      </div>
-                      
-                      {/* Dropdown Results */}
-                      {showAdditionalDropdown && additionalSearchResults.length > 0 && (
-                        <div className="bg-white border border-[var(--color-light-gray)] rounded-lg shadow-lg overflow-hidden">
-                          {additionalSearchResults.map((guest) => (
-                            <button
-                              key={guest.id}
-                              type="button"
-                              onClick={() => handleSelectAdditionalGuest(guest)}
-                              className="w-full px-4 py-3 text-left hover:bg-[var(--color-ivory)] transition-colors border-b border-[var(--color-light-gray)] last:border-b-0"
-                            >
-                              <span className="font-medium text-[var(--color-charcoal)]">{guest.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                        
+                        {/* Dropdown Results - Overlay */}
+                        {showAdditionalDropdown && additionalSearchResults.length > 0 && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-[var(--color-light-gray)] shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden z-50 max-h-60 overflow-y-auto">
+                            {additionalSearchResults.map((guest) => (
+                              guest.hasRsvp ? (
+                                <div key={guest.id} className="w-full px-5 py-3 flex items-center justify-between border-b border-[var(--color-light-gray)]/50 last:border-b-0">
+                                  <span className="font-medium text-[var(--color-text-light)]">{guest.name}</span>
+                                  <span className="text-xs text-[var(--color-text-light)] italic">RSVP Sent</span>
+                                </div>
+                              ) : (
+                                <button
+                                  key={guest.id}
+                                  type="button"
+                                  onClick={() => handleSelectAdditionalGuest(guest)}
+                                  className="w-full px-5 py-3 text-left hover:bg-[var(--color-cream)]/50 transition-colors border-b border-[var(--color-light-gray)]/50 last:border-b-0"
+                                >
+                                  <span className="font-medium text-[var(--color-charcoal)]">{guest.name}</span>
+                                </button>
+                              )
+                            ))}
+                          </div>
+                        )}
 
-                      {showAdditionalDropdown && additionalSearchQuery.length >= 2 && additionalSearchResults.length === 0 && !isSearchingAdditional && (
-                        <div className="p-3 bg-[var(--color-ivory)] rounded-lg text-center">
-                          <p className="text-sm text-[var(--color-warm-gray)]">
-                            No guests found matching &ldquo;{additionalSearchQuery}&rdquo;
-                          </p>
-                        </div>
-                      )}
+                        {/* No results message - Overlay */}
+                        {showAdditionalDropdown && additionalSearchQuery.length >= 2 && additionalSearchResults.length === 0 && !isSearchingAdditional && (
+                          <div className="absolute top-full left-0 right-0 mt-1 p-4 border-2 border-[var(--color-light-gray)] bg-[var(--color-cream)]/30 text-center z-50">
+                            <p className="text-sm text-[var(--color-warm-gray)]">
+                              No guests found matching &ldquo;{additionalSearchQuery}&rdquo;
+                            </p>
+                          </div>
+                        )}
+                      </div>
 
                       <button
                         type="button"
@@ -516,7 +731,7 @@ export default function RSVPPage() {
                     <button
                       type="button"
                       onClick={() => setShowAddGuestInput(true)}
-                      className="w-full py-3 border-2 border-dashed border-[var(--color-light-gray)] rounded-lg text-[var(--color-warm-gray)] hover:border-[var(--color-dusty-blue)] hover:text-[var(--color-dusty-blue)] transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-4 border-2 border-dashed border-[var(--color-light-gray)] text-[var(--color-warm-gray)] hover:border-[var(--color-dusty-rose)]/50 hover:text-[var(--color-dusty-rose)] transition-colors flex items-center justify-center gap-2 bg-white"
                     >
                       <UserPlus className="w-5 h-5" />
                       Add Another Guest
@@ -537,8 +752,9 @@ export default function RSVPPage() {
                     id="dietary"
                     value={formData.dietaryRequirements}
                     onChange={(e) => setFormData({ ...formData, dietaryRequirements: e.target.value })}
-                    className="w-full px-4 py-3 border border-[var(--color-light-gray)] rounded-lg bg-white focus:border-[var(--color-dusty-blue)] transition-colors"
+                    className="w-full px-4 py-2.5 border-2 border-[var(--color-light-gray)] bg-white focus:border-[var(--color-dusty-rose)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 transition-colors text-[var(--color-charcoal)] placeholder:text-[var(--color-warm-gray)]/60 leading-normal"
                     placeholder="e.g., Vegetarian, Gluten-free, Allergies..."
+                    autoComplete="off"
                   />
                 </div>
 
@@ -555,8 +771,9 @@ export default function RSVPPage() {
                     id="song"
                     value={formData.songRequest}
                     onChange={(e) => setFormData({ ...formData, songRequest: e.target.value })}
-                    className="w-full px-4 py-3 border border-[var(--color-light-gray)] rounded-lg bg-white focus:border-[var(--color-dusty-blue)] transition-colors"
+                    className="w-full px-4 py-2.5 border-2 border-[var(--color-light-gray)] bg-white focus:border-[var(--color-dusty-rose)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 transition-colors text-[var(--color-charcoal)] placeholder:text-[var(--color-warm-gray)]/60 leading-normal"
                     placeholder="What song will get you on the dance floor?"
+                    autoComplete="off"
                   />
                 </div>
               </>
@@ -575,20 +792,23 @@ export default function RSVPPage() {
                 rows={4}
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="w-full px-4 py-3 border border-[var(--color-light-gray)] rounded-lg bg-white focus:border-[var(--color-dusty-blue)] transition-colors resize-none"
+                className="w-full px-4 py-2.5 border-2 border-[var(--color-light-gray)] bg-white focus:border-[var(--color-dusty-rose)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 transition-colors resize-none text-[var(--color-charcoal)] placeholder:text-[var(--color-warm-gray)]/60 leading-normal"
                 placeholder="Share your well wishes or let us know if there's anything we should know..."
+                aria-label="Leave us a message"
               />
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting || !formData.attending || !formData.email || !selectedGuest}
-              className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            {/* Submit Button - Classic elegant style */}
+            <div className="relative group">
+              <button
+                type="submit"
+                disabled={isSubmitting || isFormIncomplete}
+                className="w-full py-4 px-8 border-2 border-[var(--color-dusty-rose)] bg-white text-[var(--color-dusty-rose)] hover:bg-[var(--color-dusty-rose)] hover:text-white focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)] focus:ring-offset-2 transition-all duration-300 font-medium tracking-wide flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[var(--color-dusty-rose)]"
+                aria-label={isSubmitting ? "Submitting RSVP" : "Submit RSVP"}
+              >
               {isSubmitting ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-[var(--color-dusty-rose)]/30 border-t-[var(--color-dusty-rose)] rounded-full animate-spin"></div>
                   Sending...
                 </>
               ) : (
@@ -597,13 +817,33 @@ export default function RSVPPage() {
                   Send RSVP
                 </>
               )}
-            </button>
+              </button>
+              
+              {/* Tooltip for incomplete form */}
+              {isFormIncomplete && !isSubmitting && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-4 py-3 bg-[var(--color-charcoal)] text-white text-sm rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 min-w-[200px]">
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[var(--color-charcoal)]"></div>
+                  <p className="font-medium mb-2">Please complete:</p>
+                  <ul className="space-y-1">
+                    {missingFields.map((field, index) => (
+                      <li key={index} className="text-xs flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>{field}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </form>
 
-          {/* Note */}
-          <p className="text-center text-[var(--color-text-light)] text-sm mt-8 pt-6 border-t border-[var(--color-light-gray)]">
-            Can&apos;t find your name or have questions about plus ones? Please contact one of us directly.
-          </p>
+            {/* Note */}
+            <div className="mt-12 pt-8 border-t-2 border-[var(--color-light-gray)]">
+              <p className="text-center text-[var(--color-text-light)] text-sm leading-relaxed">
+                Can&apos;t find your name or have questions about plus ones? Please contact one of us directly.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

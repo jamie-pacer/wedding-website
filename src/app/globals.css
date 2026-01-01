@@ -164,6 +164,17 @@ button:disabled, .btn-primary:disabled, .btn-secondary:disabled {
   animation: floatIn 1s ease-out both;
 }
 
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
 .animation-delay-100 { animation-delay: 0.1s; }
 .animation-delay-200 { animation-delay: 0.2s; }
 .animation-delay-300 { animation-delay: 0.3s; }
