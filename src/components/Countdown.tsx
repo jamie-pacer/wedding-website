@@ -52,11 +52,11 @@ export function Countdown() {
   return (
     <div className="grid grid-cols-4 gap-4 max-w-lg mx-auto">
       {items.map((item) => (
-        <div key={item.label} className="bg-[var(--color-cream)] rounded-xl p-4 border border-[var(--color-light-gray)]">
-          <p className="text-3xl md:text-4xl tabular-nums text-[var(--color-charcoal)]">
+        <div key={item.label} className="bg-white/90 backdrop-blur-sm rounded-xl p-4 md:p-5 border-2 border-white/80 shadow-md">
+          <p className="text-3xl md:text-4xl tabular-nums text-[var(--color-charcoal)] font-semibold drop-shadow-sm">
             {typeof item.value === "number" ? String(item.value).padStart(2, "0") : item.value}
           </p>
-          <p className="text-sm text-[var(--color-warm-gray)] font-light">
+          <p className="text-sm text-[var(--color-warm-gray)] font-medium mt-1">
             {item.label}
           </p>
         </div>

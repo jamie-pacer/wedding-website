@@ -43,7 +43,15 @@ export default function RSVPPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const supabase = createClient();
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+  
+  // Initialize Supabase client only on client side
+  const getSupabase = () => {
+    if (!supabaseRef.current && typeof window !== 'undefined') {
+      supabaseRef.current = createClient();
+    }
+    return supabaseRef.current;
+  };
 
   // Search for primary guest as user types
   useEffect(() => {
@@ -53,6 +61,9 @@ export default function RSVPPage() {
         setShowDropdown(false);
         return;
       }
+
+      const supabase = getSupabase();
+      if (!supabase) return;
 
       setIsSearching(true);
       const { data, error } = await supabase
@@ -70,7 +81,7 @@ export default function RSVPPage() {
 
     const debounce = setTimeout(searchGuests, 300);
     return () => clearTimeout(debounce);
-  }, [searchQuery, supabase, selectedGuest]);
+  }, [searchQuery, selectedGuest]);
 
   // Search for additional guests
   useEffect(() => {
@@ -80,6 +91,9 @@ export default function RSVPPage() {
         setShowAdditionalDropdown(false);
         return;
       }
+
+      const supabase = getSupabase();
+      if (!supabase) return;
 
       setIsSearchingAdditional(true);
       
@@ -110,7 +124,7 @@ export default function RSVPPage() {
 
     const debounce = setTimeout(searchAdditionalGuests, 300);
     return () => clearTimeout(debounce);
-  }, [additionalSearchQuery, supabase, selectedGuest, formData.additionalGuests]);
+  }, [additionalSearchQuery, selectedGuest, formData.additionalGuests]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -165,6 +179,12 @@ export default function RSVPPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedGuest || !formData.email) return;
+    
+    const supabase = getSupabase();
+    if (!supabase) {
+      alert("Unable to connect. Please refresh the page.");
+      return;
+    }
     
     setIsSubmitting(true);
     

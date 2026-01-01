@@ -120,8 +120,15 @@ Replace the placeholder in the home page with your actual photo:
 
 1. Push your code to GitHub
 2. Import the project in Vercel
-3. Add your environment variables
+3. Add your environment variables in Vercel dashboard:
+   - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon/public key
 4. Deploy!
+
+**Important**: Make sure your Supabase project has the following configured:
+- Database migrations applied (run `npm run supabase:push` or apply migrations manually)
+- Row Level Security (RLS) policies set up for public access to guests table (for RSVP search)
+- Storage bucket "photos" created with public access (for photo booth feature)
 
 ### Other Platforms
 
@@ -129,6 +136,10 @@ The app can be deployed to any platform that supports Next.js:
 - Netlify
 - Railway
 - Self-hosted with `npm run build && npm start`
+
+**Required Environment Variables:**
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon/public key
 
 ## Wedding Details
 

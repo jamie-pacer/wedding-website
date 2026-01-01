@@ -182,16 +182,31 @@ export default function HomePage() {
       </section>
 
       {/* Countdown Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl text-[var(--color-charcoal)] mb-4">
-            Counting Down
-          </h2>
-          <p className="text-[var(--color-warm-gray)] mb-8 font-light">
-            Until we say &ldquo;I do&rdquo;
-          </p>
-          
-          <Countdown />
+      <section className="relative py-32 md:py-40 px-6 min-h-[600px] md:min-h-[700px] flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <Image
+          src="/watercolour.png"
+          alt="Watercolour background"
+          fill
+          className="object-cover"
+          priority
+        />
+        
+        {/* Subtle overlay for better text contrast */}
+        <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
+        
+        {/* Content */}
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl px-8 py-10 md:px-12 md:py-14 shadow-lg border border-white/50">
+            <h2 className="text-4xl md:text-5xl text-[var(--color-charcoal)] mb-4 font-semibold drop-shadow-sm">
+              Counting Down
+            </h2>
+            <p className="text-[var(--color-warm-gray)] mb-8 font-light text-lg">
+              Until we say &ldquo;I do&rdquo;
+            </p>
+            
+            <Countdown />
+          </div>
         </div>
       </section>
 
