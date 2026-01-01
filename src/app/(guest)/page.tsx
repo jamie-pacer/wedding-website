@@ -1,17 +1,13 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, MapPin, Clock, Heart } from "lucide-react";
 import { Countdown } from "@/components/Countdown";
+import { ScrollButton } from "@/components/ScrollButton";
+
+// Enable static generation for better performance
+export const dynamic = 'force-static';
 
 export default function HomePage() {
-  const handleScrollDown = () => {
-    window.scrollTo({
-      top: window.innerHeight,
-      behavior: "smooth",
-    });
-  };
   return (
     <div className="bg-[var(--color-cream)]">
       {/* Hero Section - Invitation Style */}
@@ -23,6 +19,8 @@ export default function HomePage() {
           fill
           className="object-cover animate-scale-out"
           priority
+          sizes="100vw"
+          quality={85}
         />
 
         {/* Invitation Card */}
@@ -97,15 +95,7 @@ export default function HomePage() {
         </div>
 
         {/* Scroll Indicator */}
-        <button
-          onClick={handleScrollDown}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer hover:scale-110 transition-transform"
-          aria-label="Scroll down"
-        >
-          <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
+        <ScrollButton />
       </section>
 
       {/* Engagement Photo Section */}
@@ -121,6 +111,8 @@ export default function HomePage() {
                   fill
                   className="object-cover"
                   priority
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  quality={85}
                 />
               </div>
             </div>
@@ -230,7 +222,8 @@ export default function HomePage() {
           alt="Watercolour background"
           fill
           className="object-cover"
-          priority
+          sizes="100vw"
+          quality={85}
         />
         
         {/* Content */}
