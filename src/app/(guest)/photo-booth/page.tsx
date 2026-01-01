@@ -43,20 +43,36 @@ export default function LiveMomentsPage() {
   const [hasMore, setHasMore] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+  
+  // Initialize Supabase client only on client side
+  const getSupabase = () => {
+    if (!supabaseRef.current && typeof window !== 'undefined') {
+      supabaseRef.current = createClient();
+    }
+    return supabaseRef.current;
+  };
 
   // Add URLs to photos
   const addUrlsToPhotos = useCallback((data: Photo[]) => {
+    const supabase = getSupabase();
+    if (!supabase) return data;
     return data.map((photo) => {
       const { data: urlData } = supabase.storage
         .from("photos")
         .getPublicUrl(photo.storage_path);
       return { ...photo, url: urlData.publicUrl };
     });
-  }, [supabase]);
+  }, []);
 
   // Load photos (initial load)
   const loadPhotos = useCallback(async (reset = true) => {
+    const supabase = getSupabase();
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     if (reset) {
       setLoading(true);
       setPhotos([]);
@@ -87,11 +103,17 @@ export default function LiveMomentsPage() {
     setPhotos(photosWithUrls);
     setHasMore((data?.length || 0) >= PHOTOS_PER_PAGE);
     setLoading(false);
-  }, [supabase, sortOrder, addUrlsToPhotos]);
+  }, [sortOrder, addUrlsToPhotos]);
 
   // Load more photos (pagination)
   const loadMorePhotos = async () => {
     if (loadingMore || !hasMore) return;
+    
+    const supabase = getSupabase();
+    if (!supabase) {
+      setLoadingMore(false);
+      return;
+    }
     
     setLoadingMore(true);
     const startIndex = photos.length;
@@ -201,6 +223,12 @@ export default function LiveMomentsPage() {
   const handleUpload = async () => {
     if (!selectedFile || !guestName.trim()) return;
 
+    const supabase = getSupabase();
+    if (!supabase) {
+      alert("Unable to connect. Please refresh the page.");
+      return;
+    }
+
     setUploading(true);
     try {
       // Compress image before upload (max 2048px, 95% quality)
@@ -281,6 +309,12 @@ export default function LiveMomentsPage() {
 
   const performDelete = async () => {
     if (!selectedPhoto) return;
+    
+    const supabase = getSupabase();
+    if (!supabase) {
+      alert("Unable to connect. Please refresh the page.");
+      return;
+    }
     
     setDeleting(true);
     setConfirmDelete(false);
