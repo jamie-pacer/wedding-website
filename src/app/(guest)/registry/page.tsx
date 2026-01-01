@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mountain, Hotel, Snowflake, Cable, Loader2 } from "lucide-react";
+import { Mountain, Hotel, Snowflake, Cable } from "lucide-react";
 
 interface RegistryItem {
   id: string;
@@ -56,7 +56,6 @@ export default function RegistryPage() {
   const [selectedItem, setSelectedItem] = useState<RegistryItem | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleContribute = (item: RegistryItem) => {
     setSelectedItem(item);
@@ -73,30 +72,9 @@ export default function RegistryPage() {
     const amount = selectedAmount || (customAmount ? parseFloat(customAmount) : 0);
     if (amount <= 0 || !selectedItem) return;
 
-    setIsProcessing(true);
-    try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount,
-          itemTitle: selectedItem.title,
-          itemId: selectedItem.id,
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error || "Failed to create checkout session");
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Something went wrong. Please try again.");
-      setIsProcessing(false);
-    }
+    // Payment integration coming soon
+    alert("Payment integration is coming soon! Please contact us directly if you'd like to contribute.");
+    setSelectedItem(null);
   };
 
   return (
@@ -258,24 +236,13 @@ export default function RegistryPage() {
                 </button>
                 <button
                   onClick={handleProceed}
-                  disabled={(!selectedAmount && !customAmount) || isProcessing}
-                  className="flex-1 py-3 bg-[var(--color-dusty-blue)] text-white rounded-lg hover:bg-[var(--color-slate-blue)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  disabled={!selectedAmount && !customAmount}
+                  className="flex-1 py-3 bg-[var(--color-dusty-blue)] text-white rounded-lg hover:bg-[var(--color-slate-blue)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    "Continue to Payment"
-                  )}
+                  Continue
                 </button>
               </div>
 
-              {/* Stripe Note */}
-              <p className="text-center text-xs text-[var(--color-text-light)] mt-4">
-                Secure payments powered by Stripe
-              </p>
             </div>
           </div>
         </div>
