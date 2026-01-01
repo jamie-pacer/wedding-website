@@ -1,5 +1,8 @@
+// Import types from database.types
+import type { Database, Tables, TablesInsert, TablesUpdate } from "./database.types";
+
 // Re-export auto-generated types from Supabase CLI
-export type { Database, Tables, TablesInsert, TablesUpdate } from "./database.types";
+export type { Database, Tables, TablesInsert, TablesUpdate };
 
 // Convenience type aliases
 export type Guest = Tables<"guests">;
