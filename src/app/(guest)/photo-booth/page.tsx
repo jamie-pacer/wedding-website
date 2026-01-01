@@ -5,6 +5,9 @@ import { createClient } from "@/lib/supabase/client";
 import { Camera, Upload, X, Download, ChevronLeft, ChevronRight, User, Loader2, Trash2, ArrowUpDown } from "lucide-react";
 import Image from "next/image";
 
+// Force dynamic rendering to prevent static generation
+export const dynamic = 'force-dynamic';
+
 const PHOTOS_PER_PAGE = 24;
 
 interface Photo {
