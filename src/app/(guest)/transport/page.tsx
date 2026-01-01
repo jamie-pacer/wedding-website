@@ -1,5 +1,8 @@
 import { Car, MapPin, Navigation, Bus, Phone } from "lucide-react";
 
+// Enable static generation for better performance
+export const dynamic = 'force-static';
+
 export default function TransportPage() {
   return (
     <div 

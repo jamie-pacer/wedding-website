@@ -1,6 +1,9 @@
 import { Heart, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
+// Enable static generation for better performance
+export const dynamic = 'force-static';
+
 export default function RegistrySuccessPage() {
   return (
     <div 

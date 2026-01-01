@@ -1,5 +1,8 @@
 import { MapPin, ExternalLink } from "lucide-react";
 
+// Enable static generation for better performance
+export const dynamic = 'force-static';
+
 export default function AccommodationPage() {
   return (
     <div 
