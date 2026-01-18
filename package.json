@@ -14,12 +14,16 @@
     "supabase:types": "supabase gen types typescript --linked > src/lib/supabase/types.ts"
   },
   "dependencies": {
+    "@radix-ui/react-select": "^2.2.6",
+    "@stripe/stripe-js": "^8.6.1",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "stripe": "^20.1.2",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

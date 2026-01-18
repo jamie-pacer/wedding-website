@@ -221,3 +221,48 @@ input:focus, textarea:focus, select:focus {
   border-color: var(--color-dusty-blue);
   box-shadow: 0 0 0 3px rgba(139, 168, 184, 0.2);
 }
+
+/* Safe area for iOS devices */
+.safe-area-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Vaul drawer animation overrides */
+[vaul-drawer] {
+  touch-action: none;
+}
+
+[vaul-drawer][vaul-drawer-direction="bottom"] {
+  will-change: transform;
+}
+
+/* Radix Select animations */
+@keyframes selectSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes selectSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-radix-select-content][data-side="bottom"] {
+  animation: selectSlideDown 150ms ease-out;
+}
+
+[data-radix-select-content][data-side="top"] {
+  animation: selectSlideUp 150ms ease-out;
+}

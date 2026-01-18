@@ -1,4 +1,4 @@
-import { Heart, CheckCircle } from "lucide-react";
+import { Heart, Check } from "lucide-react";
 import Link from "next/link";
 
 // Enable static generation for better performance
@@ -15,55 +15,58 @@ export default function RegistrySuccessPage() {
         backgroundAttachment: "fixed",
       }}
     >
-      <div className="max-w-lg mx-auto">
-        {/* Content card with backdrop */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 md:p-12 shadow-lg text-center">
-          {/* Success Icon */}
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
-            <CheckCircle className="w-10 h-10 text-green-600" />
-          </div>
-
-          {/* Header */}
-          <h1 className="text-4xl text-[var(--color-charcoal)] mb-4">
-            Thank You!
-          </h1>
-          <div className="floral-divider w-24 mx-auto mb-6"></div>
+      <div className="max-w-md mx-auto animate-float-in">
+        {/* Content card */}
+        <div className="bg-white/95 backdrop-blur-sm border-2 border-[var(--color-dusty-rose)]/30 p-8 md:p-10 shadow-[0_25px_60px_-12px_rgba(0,0,0,0.35)] relative text-center">
+          {/* Elegant inner border */}
+          <div className="absolute inset-4 md:inset-5 border border-[var(--color-dusty-rose)]/40 pointer-events-none"></div>
           
-          <p className="text-[var(--color-warm-gray)] leading-relaxed mb-6">
-            Your generous contribution to our honeymoon fund has been received. 
-            We&apos;re so grateful for your love and support as we begin this 
-            exciting new chapter together.
-          </p>
+          <div className="relative z-10">
+            {/* Success Icon */}
+            <div className="w-14 h-14 mx-auto mb-5 rounded-full border-2 border-[var(--color-sage)] flex items-center justify-center">
+              <Check className="w-7 h-7 text-[var(--color-sage)]" strokeWidth={2.5} />
+            </div>
 
-          <p className="text-[var(--color-dusty-blue)] font-medium mb-8">
-            We can&apos;t wait to share our adventure with you! ⛷️
-          </p>
+            {/* Header */}
+            <h1 className="text-3xl md:text-4xl text-[var(--color-charcoal)] mb-4 font-serif">
+              Thank You
+            </h1>
+            <div className="flex items-center justify-center gap-3 mb-5">
+              <div className="h-px w-10 bg-[var(--color-dusty-rose)]/40"></div>
+              <Heart className="w-3 h-3 text-[var(--color-dusty-rose)] fill-[var(--color-dusty-rose)]" />
+              <div className="h-px w-10 bg-[var(--color-dusty-rose)]/40"></div>
+            </div>
+            
+            <p className="text-[var(--color-warm-gray)] leading-relaxed mb-6">
+              Your generous contribution to our honeymoon fund means the world to us. 
+              We&apos;re so grateful for your love and support.
+            </p>
 
-          {/* Heart decoration */}
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-[var(--color-dusty-rose)]"></div>
-            <Heart className="w-5 h-5 text-[var(--color-dusty-rose)] fill-[var(--color-dusty-rose)]" />
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-[var(--color-dusty-rose)]"></div>
-          </div>
+            <p className="text-sm text-[var(--color-charcoal)] mb-8">
+              We can&apos;t wait to share stories from our adventure
+              <span className="block text-xs text-[var(--color-warm-gray)] mt-1">
+                (even if we&apos;re keeping the destination secret for now)
+              </span>
+            </p>
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link 
-              href="/registry"
-              className="px-6 py-3 border-2 border-[var(--color-dusty-blue)] text-[var(--color-dusty-blue)] rounded-lg hover:bg-[var(--color-dusty-blue)]/10 transition-colors font-medium flex items-center justify-center"
-            >
-              Back to Registry
-            </Link>
-            <Link 
-              href="/"
-              className="px-6 py-3 bg-[var(--color-dusty-blue)] text-white rounded-lg hover:bg-[var(--color-slate-blue)] transition-colors font-medium flex items-center justify-center"
-            >
-              Return Home
-            </Link>
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link 
+                href="/registry"
+                className="px-6 py-2.5 text-xs tracking-[0.15em] uppercase border border-[var(--color-light-gray)] text-[var(--color-warm-gray)] hover:border-[var(--color-charcoal)] hover:text-[var(--color-charcoal)] transition-colors"
+              >
+                Back to Fund
+              </Link>
+              <Link 
+                href="/"
+                className="px-6 py-2.5 text-xs tracking-[0.15em] uppercase border border-[var(--color-charcoal)] text-[var(--color-charcoal)] hover:bg-[var(--color-charcoal)] hover:text-white transition-colors"
+              >
+                Return Home
+              </Link>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
-

@@ -25,42 +25,45 @@ export default function HomePage() {
 
         {/* Invitation Card */}
         <div className="relative z-10 mx-4 md:mx-6 animate-float-in">
-          <div className="bg-white/95 backdrop-blur-sm px-8 py-9 md:px-14 md:py-13 lg:px-18 lg:py-15 max-w-lg md:max-w-xl text-center shadow-[0_25px_60px_-12px_rgba(0,0,0,0.35)]">
+          <div className="bg-white/95 backdrop-blur-sm px-8 py-7 md:px-14 md:py-10 lg:px-18 lg:py-12 max-w-lg md:max-w-xl text-center shadow-[0_25px_60px_-12px_rgba(0,0,0,0.35)]">
             {/* Thin elegant border inside the card */}
             <div className="absolute inset-4 md:inset-6 border border-[var(--color-dusty-rose)]/40 pointer-events-none"></div>
             
             {/* Top ornament */}
-            <p className="text-[var(--color-warm-gray)] text-xs md:text-sm tracking-[0.3em] uppercase mb-7">
+            <p className="text-[var(--color-warm-gray)] text-xs md:text-sm tracking-[0.3em] uppercase mb-4">
               Together with their families
             </p>
 
             {/* Names in elegant script */}
             <h1 className="text-[var(--color-charcoal)] leading-tight">
               <span className="block text-5xl md:text-6xl lg:text-7xl">Natalie</span>
-              <span className="block text-2xl md:text-3xl text-[var(--color-dusty-rose)] my-2">&amp;</span>
+              <span className="block text-sm md:text-base lg:text-lg -mt-1">Lacey</span>
+              <span className="block text-2xl md:text-3xl text-[var(--color-dusty-rose)] my-1">&amp;</span>
               <span className="block text-5xl md:text-6xl lg:text-7xl">James</span>
+              <span className="block text-sm md:text-base lg:text-lg -mt-1">&ldquo;Jamie&rdquo;</span>
+              <span className="block text-sm md:text-base lg:text-lg -mt-1">Shuttleworth</span>
             </h1>
 
             {/* Simple divider */}
-            <div className="flex items-center justify-center gap-4 my-7">
+            <div className="flex items-center justify-center gap-4 my-4">
               <div className="h-px w-12 bg-[var(--color-dusty-rose)]/60"></div>
               <div className="w-1.5 h-1.5 bg-[var(--color-dusty-rose)]/60 rotate-45"></div>
               <div className="h-px w-12 bg-[var(--color-dusty-rose)]/60"></div>
             </div>
 
             {/* Invitation text */}
-            <p className="text-[var(--color-warm-gray)] text-sm md:text-base tracking-wide mb-5">
+            <p className="text-[var(--color-warm-gray)] text-sm md:text-base tracking-wide mb-4">
               Request the pleasure of your company<br />
               at their wedding celebration
             </p>
 
             {/* Date */}
-            <p className="text-2xl md:text-3xl text-[var(--color-charcoal)] mb-5">
+            <p className="text-2xl md:text-3xl text-[var(--color-charcoal)] mb-4">
               October 24, 2026
             </p>
 
             {/* Venue */}
-            <div>
+            <div className="mb-4">
               <p className="text-lg md:text-xl text-[var(--color-charcoal)]">
                 Die Woud
               </p>
@@ -70,7 +73,7 @@ export default function HomePage() {
             </div>
 
             {/* Dress Code */}
-            <div className="mt-7 relative group">
+            <div className="mt-4 relative group">
               <p className="text-[var(--color-charcoal)] text-sm md:text-base tracking-wide">
                 <span className="font-medium">Dress Code:</span> <span className="font-semibold">Summer semi-formal</span>
               </p>
@@ -83,7 +86,7 @@ export default function HomePage() {
             </div>
 
             {/* RSVP Button */}
-            <div className="mt-6">
+            <div className="mt-4">
               <Link 
                 href="/rsvp" 
                 className="inline-block px-8 py-2.5 border border-[var(--color-charcoal)] text-[var(--color-charcoal)] text-xs tracking-[0.2em] uppercase hover:bg-[var(--color-charcoal)] hover:text-white transition-all duration-300"
