@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Heart, Send, Check, Minus, Search, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import confetti from "canvas-confetti";
 
 interface AdditionalGuest {
   id: string;
@@ -44,7 +45,6 @@ export default function RSVPPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showConfetti, setShowConfetti] = useState(false);
 
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
   
@@ -275,10 +275,37 @@ export default function RSVPPage() {
     
     setIsSubmitting(false);
     setIsSubmitted(true);
-    // Trigger confetti animation
-    setShowConfetti(true);
-    // Clean up confetti after animation
-    setTimeout(() => setShowConfetti(false), 3000);
+    
+    // Trigger canvas-confetti animation
+    if (formData.attending === "yes") {
+      const colors = ['#D4A5A5', '#B5C4B1', '#8BA8B8', '#E8C4C4', '#9DB4A0'];
+      const duration = 3000;
+      const end = Date.now() + duration;
+
+      const frame = () => {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0, y: 0.6 },
+          colors: colors,
+        });
+        
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1, y: 0.6 },
+          colors: colors,
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      };
+
+      frame();
+    }
   };
 
   const removeGuest = (index: number) => {
@@ -312,7 +339,7 @@ export default function RSVPPage() {
   if (isSubmitted) {
     return (
       <div 
-        className="min-h-screen px-6 pt-28 pb-16 flex items-center justify-center relative overflow-hidden"
+        className="min-h-screen px-6 pt-28 pb-16"
         style={{
           backgroundImage: "url('/background-3.png')",
           backgroundSize: "cover",
@@ -320,94 +347,43 @@ export default function RSVPPage() {
           backgroundAttachment: "fixed",
         }}
       >
-        {/* Confetti Animation */}
-        {showConfetti && formData.attending === "yes" && (
-          <div className="fixed inset-0 pointer-events-none z-50">
-            {[...Array(50)].map((_, i) => {
-              const colors = [
-                'var(--color-dusty-rose)',
-                'var(--color-sage)',
-                'var(--color-dusty-blue)',
-                'var(--color-champagne)',
-                'var(--color-slate-blue)'
-              ];
-              const color = colors[Math.floor(Math.random() * colors.length)];
-              const left = Math.random() * 100;
-              const delay = Math.random() * 0.5;
-              const duration = 2 + Math.random() * 1;
-              
-              return (
-                <div
-                  key={i}
-                  className="absolute w-2 h-2 rounded-sm"
-                  style={{
-                    left: `${left}%`,
-                    top: '-10px',
-                    backgroundColor: color,
-                    animation: `confetti-fall ${duration}s ease-out forwards`,
-                    animationDelay: `${delay}s`,
-                    transform: `rotate(${Math.random() * 360}deg)`,
-                  }}
-                />
-              );
-            })}
-            {[...Array(30)].map((_, i) => {
-              const colors = [
-                'var(--color-dusty-rose)',
-                'var(--color-sage)',
-                'var(--color-dusty-blue)',
-                'var(--color-champagne)',
-                'var(--color-slate-blue)'
-              ];
-              const color = colors[Math.floor(Math.random() * colors.length)];
-              const left = Math.random() * 100;
-              const delay = Math.random() * 0.5;
-              const duration = 2.5 + Math.random() * 1;
-              
-              return (
-                <div
-                  key={`circle-${i}`}
-                  className="absolute w-3 h-3 rounded-full"
-                  style={{
-                    left: `${left}%`,
-                    top: '-10px',
-                    backgroundColor: color,
-                    animation: `confetti-fall ${duration}s ease-out forwards`,
-                    animationDelay: `${delay}s`,
-                  }}
-                />
-              );
-            })}
-          </div>
-        )}
-        
-        <div className="max-w-md mx-auto animate-float-in relative z-10">
-          <div className="bg-white/95 backdrop-blur-sm border-2 border-[var(--color-dusty-rose)]/30 p-12 md:p-16 text-center shadow-[0_25px_60px_-12px_rgba(0,0,0,0.35)]">
-            {/* Elegant border decoration */}
+        <div className="max-w-2xl mx-auto animate-float-in">
+          {/* Content card */}
+          <div className="bg-white/95 backdrop-blur-sm border-2 border-[var(--color-dusty-rose)]/30 p-10 md:p-16 shadow-[0_25px_60px_-12px_rgba(0,0,0,0.35)] relative text-center">
+            {/* Elegant inner border */}
             <div className="absolute inset-4 md:inset-6 border border-[var(--color-dusty-rose)]/40 pointer-events-none"></div>
             
             <div className="relative z-10">
-              <div className="w-16 h-16 border-2 border-[var(--color-dusty-rose)] flex items-center justify-center mx-auto mb-6">
-                <Check className="w-8 h-8 text-[var(--color-dusty-rose)]" />
+              {/* Success Icon */}
+              <div className="w-20 h-20 mx-auto mb-8 rounded-full border-2 border-[var(--color-sage)] flex items-center justify-center">
+                <Check className="w-10 h-10 text-[var(--color-sage)]" strokeWidth={2.5} />
               </div>
-              <h1 className="text-4xl md:text-5xl text-[var(--color-charcoal)] mb-6 font-serif">
-                Thank You
+
+              {/* Header */}
+              <h1 className="text-4xl md:text-5xl text-[var(--color-charcoal)] mb-6 font-serif tracking-wide">
+                Thank You!
               </h1>
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <div className="h-px w-12 bg-[var(--color-dusty-rose)]/40"></div>
-                <div className="w-1.5 h-1.5 bg-[var(--color-dusty-rose)]/60 rotate-45"></div>
-                <div className="h-px w-12 bg-[var(--color-dusty-rose)]/40"></div>
+              
+              <div className="flex items-center justify-center gap-3 mb-8">
+                <div className="h-px w-16 bg-[var(--color-dusty-rose)]/40"></div>
+                <Heart className="w-4 h-4 text-[var(--color-dusty-rose)] fill-[var(--color-dusty-rose)]" />
+                <div className="h-px w-16 bg-[var(--color-dusty-rose)]/40"></div>
               </div>
-              <p className="text-[var(--color-warm-gray)] mb-8 leading-relaxed text-lg">
+              
+              {/* Message */}
+              <p className="text-[var(--color-warm-gray)] leading-relaxed text-lg mb-10">
                 {formData.attending === "yes" 
                   ? "We're so excited to celebrate with you!"
                   : "We're sorry you can't make it. Thank you for letting us know."}
               </p>
-              <div className="flex items-center justify-center gap-2 text-[var(--color-dusty-rose)] font-serif text-lg">
-                <Heart className="w-4 h-4 fill-current" />
-                <span>Natalie & James</span>
-                <Heart className="w-4 h-4 fill-current" />
-              </div>
+
+              {/* Action */}
+              <a 
+                href="/"
+                className="inline-block px-8 py-2.5 border border-[var(--color-charcoal)] text-[var(--color-charcoal)] text-xs tracking-[0.2em] uppercase hover:bg-[var(--color-charcoal)] hover:text-white transition-all duration-300"
+              >
+                Return Home
+              </a>
             </div>
           </div>
         </div>

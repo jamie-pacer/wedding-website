@@ -181,23 +181,13 @@ button:disabled, .btn-primary:disabled, .btn-secondary:disabled {
 
 @keyframes confetti-fall {
   0% {
-    transform: translateY(-10vh) rotate(0deg);
+    transform: translateY(0) rotate(0deg);
     opacity: 1;
   }
   100% {
     transform: translateY(100vh) rotate(720deg);
     opacity: 0;
   }
-}
-
-.confetti {
-  position: fixed;
-  width: 10px;
-  height: 10px;
-  top: -10vh;
-  z-index: 9999;
-  animation: confetti-fall linear forwards;
-  pointer-events: none;
 }
 
 .animation-delay-100 { animation-delay: 0.1s; }
