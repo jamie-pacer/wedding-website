@@ -3,45 +3,41 @@
 import { Heart, Check } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
+import confetti from "canvas-confetti";
 
 export default function ThankYouPage() {
   useEffect(() => {
-    // Create confetti elements
-    const confettiCount = 50;
+    // Wedding color palette
     const colors = ['#D4A5A5', '#B5C4B1', '#8BA8B8', '#E8C4C4', '#9DB4A0'];
-    const confettiElements: HTMLDivElement[] = [];
     
-    for (let i = 0; i < confettiCount; i++) {
-      const confetti = document.createElement('div');
-      confetti.className = 'confetti';
-      confetti.style.position = 'fixed';
-      confetti.style.width = '10px';
-      confetti.style.height = '10px';
-      confetti.style.top = '-10vh';
-      confetti.style.left = Math.random() * 100 + '%';
-      confetti.style.zIndex = '9999';
-      confetti.style.pointerEvents = 'none';
-      confetti.style.animationName = 'confetti-fall';
-      confetti.style.animationTimingFunction = 'linear';
-      confetti.style.animationFillMode = 'forwards';
-      confetti.style.animationDelay = Math.random() * 3 + 's';
-      confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
-      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-      confetti.style.opacity = (Math.random() * 0.5 + 0.5).toString();
+    // Fire confetti from different positions
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.6 },
+        colors: colors,
+      });
       
-      document.body.appendChild(confetti);
-      confettiElements.push(confetti);
-    }
-    
-    // Cleanup function to remove confetti after animation
-    const cleanup = setTimeout(() => {
-      confettiElements.forEach(el => el.remove());
-    }, 8000);
-    
-    return () => {
-      clearTimeout(cleanup);
-      confettiElements.forEach(el => el.remove());
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.6 },
+        colors: colors,
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
     };
+
+    // Start confetti animation
+    frame();
   }, []);
 
   return (
