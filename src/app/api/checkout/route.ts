@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
               description: contributorName 
                 ? `From: ${contributorName}${message ? ` - "${message}"` : ""}`
                 : "A generous gift for the newlyweds",
+              images: [`${process.env.NEXT_PUBLIC_BASE_URL}/watercolour.png`], // Your wedding image
             },
             unit_amount: Math.round(amount * 100), // Convert to cents
           },
@@ -59,6 +60,12 @@ export async function POST(request: NextRequest) {
         contributorName: contributorName || "Anonymous",
         message: message || "",
         amount: amount.toString(),
+      },
+      // Customize the Checkout page appearance
+      custom_text: {
+        submit: {
+          message: "Thank you for your generous contribution to our honeymoon! 💕",
+        },
       },
     });
 
