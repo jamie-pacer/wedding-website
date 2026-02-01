@@ -19,6 +19,7 @@ export default function RSVPPage() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const successCardRef = useRef<HTMLDivElement>(null);
   
   const [formData, setFormData] = useState({
     email: "",
@@ -107,6 +108,29 @@ export default function RSVPPage() {
       document.removeEventListener("keydown", handleEscape);
     };
   }, []);
+
+  // Scroll to top when submission is successful - runs after React re-renders
+  useEffect(() => {
+    if (isSubmitted) {
+      // Small delay to ensure DOM has updated
+      const scrollToTop = () => {
+        // Try scrollIntoView first (more reliable on mobile)
+        if (successCardRef.current) {
+          successCardRef.current.scrollIntoView({ behavior: "instant", block: "start" });
+        }
+        // Also scroll window as fallback
+        window.scrollTo(0, 0);
+        // For iOS Safari, also try setting scrollTop directly
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      };
+      
+      // Run immediately and also after a short delay for mobile browsers
+      scrollToTop();
+      setTimeout(scrollToTop, 50);
+      setTimeout(scrollToTop, 150);
+    }
+  }, [isSubmitted]);
 
   const handleSelectGuest = (guest: Guest) => {
     setSelectedGuest(guest);
@@ -199,9 +223,6 @@ export default function RSVPPage() {
     setIsSubmitting(false);
     setIsSubmitted(true);
     
-    // Scroll to top to show thank you message
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    
     // Trigger canvas-confetti animation
     if (formData.attending === "yes") {
       const colors = ['#D4A5A5', '#B5C4B1', '#8BA8B8', '#E8C4C4', '#9DB4A0'];
@@ -249,6 +270,7 @@ export default function RSVPPage() {
   if (isSubmitted) {
     return (
       <div 
+        ref={successCardRef}
         className="min-h-screen px-6 pt-28 pb-16"
         style={{
           backgroundImage: "url('/background-3.png')",
