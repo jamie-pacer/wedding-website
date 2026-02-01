@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
               description: contributorName 
                 ? `From: ${contributorName}${message ? ` - "${message}"` : ""}`
                 : "A generous gift for the newlyweds",
-              images: [`${process.env.NEXT_PUBLIC_BASE_URL}/watercolour.png`], // Your wedding image
+              images: [`${process.env.NEXT_PUBLIC_BASE_URL}/engagement-watercolour.png`], // Your engagement photo
             },
             unit_amount: Math.round(amount * 100), // Convert to cents
           },
