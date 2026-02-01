@@ -24,8 +24,15 @@ export async function POST(request: NextRequest) {
 
     // Validate BASE_URL is set
     if (!process.env.NEXT_PUBLIC_BASE_URL) {
-      throw new Error("NEXT_PUBLIC_BASE_URL is not set in environment variables");
+      console.error("NEXT_PUBLIC_BASE_URL is not set");
+      return NextResponse.json(
+        { error: "Server configuration error: BASE_URL not set" },
+        { status: 500 }
+      );
     }
+
+    // Log for debugging (remove in production)
+    console.log("Creating checkout session for amount:", amount);
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -55,11 +62,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log("Checkout session created successfully:", session.id);
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Stripe checkout error:", error);
+    console.error("Stripe checkout error details:", error);
+    
+    // Return more specific error message
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    
     return NextResponse.json(
-      { error: "Failed to create checkout session" },
+      { 
+        error: "Failed to create checkout session",
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined
+      },
       { status: 500 }
     );
   }
