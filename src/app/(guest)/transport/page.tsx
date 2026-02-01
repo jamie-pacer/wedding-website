@@ -1,5 +1,4 @@
 import { MapPin } from "lucide-react";
-import { TransportOptions } from "@/components/TransportOptions";
 
 // Enable static generation for better performance
 export const dynamic = 'force-static';
@@ -27,18 +26,22 @@ export default function TransportPage() {
               <h1 className="text-5xl md:text-6xl text-[var(--color-charcoal)] mb-6 font-serif tracking-wide">
                 Getting There
               </h1>
-              <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="flex items-center justify-center gap-3">
                 <div className="h-px w-16 bg-[var(--color-dusty-rose)]/40"></div>
                 <div className="w-1.5 h-1.5 bg-[var(--color-dusty-rose)]/60 rotate-45"></div>
                 <div className="h-px w-16 bg-[var(--color-dusty-rose)]/40"></div>
               </div>
-              <p className="text-[var(--color-warm-gray)] leading-relaxed max-w-xl mx-auto">
-                Die Woud is nestled in the beautiful Caledon countryside, about 1.5 hours from Cape Town.
-              </p>
             </div>
 
-            {/* Transport Options (Client Component) */}
-            <TransportOptions />
+            {/* Transport Information */}
+            <div className="bg-white/50 backdrop-blur-sm border-2 border-[var(--color-dusty-rose)]/30 p-8 mb-10 relative">
+              <div className="absolute inset-2 border border-[var(--color-dusty-rose)]/40 pointer-events-none"></div>
+              <div className="relative z-10">
+                <p className="text-[var(--color-warm-gray)] text-center leading-relaxed">
+                  We will be sharing a list of recommended providers for shuttles and taxi&apos;s shortly, both here and to the email addresses provided when RSVPing
+                </p>
+              </div>
+            </div>
 
             {/* Venue Location */}
             <div className="pt-6 border-t border-[var(--color-light-gray)] text-center">

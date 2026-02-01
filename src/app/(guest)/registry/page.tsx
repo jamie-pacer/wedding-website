@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Heart } from "lucide-react";
 
-const suggestedAmounts = [50, 100, 250, 500, 1000];
+const suggestedAmounts = [100, 250, 500, 1000];
 
 export default function RegistryPage() {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
@@ -71,23 +71,33 @@ export default function RegistryPage() {
                 <Heart className="w-3.5 h-3.5 text-[var(--color-dusty-rose)] fill-[var(--color-dusty-rose)]" />
                 <div className="h-px w-12 bg-[var(--color-dusty-rose)]/40"></div>
               </div>
-              <p className="text-[var(--color-warm-gray)] leading-relaxed max-w-lg mx-auto text-sm">
-                Your presence at our wedding is the greatest gift we could ask for. 
-                For those who would really like to share a gift with us, as we are based 
-                in the UK and unable to accept physical gifts, we would massively appreciate 
-                any contributions towards our dream honeymoon!
-              </p>
-              <p className="text-[var(--color-warm-gray)] leading-relaxed max-w-lg mx-auto text-sm mt-4">
-                We will be sharing 15% of your contributions with Waves for Change in Cape Town.{" "}
-                <a 
-                  href="https://waves-for-change.org/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[var(--color-dusty-blue)] hover:text-[var(--color-slate-blue)] underline underline-offset-2"
-                >
-                  Find out more about them here
-                </a>.
-              </p>
+              <div className="text-[var(--color-warm-gray)] leading-relaxed max-w-lg mx-auto text-sm space-y-3">
+                <p className="italic">
+                  Your presence is the greatest gift of all<br />
+                  But if you&apos;d like to help us on our way,<br />
+                  A contribution towards our honeymoon<br />
+                  Would mean more to us than words can say.
+                </p>
+                <p className="italic">
+                  As we&apos;re UK-based and travelling light,<br />
+                  Physical gifts are tricky, we hope that&apos;s alright.<br />
+                  Instead, you&apos;ll be helping create memories new,<br />
+                  Adventures, sunsets, and stories too.
+                </p>
+                <p className="italic">
+                  We&apos;ll also be sharing the love around,<br />
+                  With 15% donated to{" "}
+                  <a 
+                    href="https://waves-for-change.org/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[var(--color-dusty-blue)] hover:text-[var(--color-slate-blue)] underline underline-offset-2 not-italic"
+                  >
+                    Waves for Change
+                  </a>
+                  {" "}in Cape Town
+                </p>
+              </div>
             </div>
 
             {/* Contribution Section */}
@@ -137,22 +147,19 @@ export default function RegistryPage() {
               </div>
 
               {/* Optional Details */}
-              <div className="border-t border-[var(--color-light-gray)] pt-6">
-                <p className="text-xs text-center text-[var(--color-warm-gray)] mb-4 uppercase tracking-wide">
-                  Optional: Leave your name and a message
-                </p>
+              <div className="pt-6">
                 <div className="space-y-3 max-w-md mx-auto">
                   <input
                     type="text"
                     value={contributorName}
                     onChange={(e) => setContributorName(e.target.value)}
-                    placeholder="Your name"
+                    placeholder="From:"
                     className="w-full px-3 py-2.5 text-sm border border-[var(--color-light-gray)] focus:border-[var(--color-dusty-blue)] transition-colors outline-none"
                   />
                   <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder="A message for the happy couple..."
+                    placeholder="Message..."
                     rows={2}
                     className="w-full px-3 py-2.5 text-sm border border-[var(--color-light-gray)] focus:border-[var(--color-dusty-blue)] transition-colors outline-none resize-none"
                   />
@@ -160,21 +167,17 @@ export default function RegistryPage() {
               </div>
 
               {/* Contribute Button */}
-              <div className="text-center pt-2">
-                <button
-                  onClick={handleContribute}
-                  disabled={activeAmount < 10 || isLoading}
-                  className="inline-block px-8 py-2.5 border border-[var(--color-charcoal)] text-[var(--color-charcoal)] text-xs tracking-[0.15em] uppercase hover:bg-[var(--color-charcoal)] hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[var(--color-charcoal)]"
-                >
-                  {isLoading ? (
-                    "Processing..."
-                  ) : activeAmount >= 10 ? (
-                    `Contribute R${activeAmount.toLocaleString()}`
-                  ) : (
-                    "Select an amount"
-                  )}
-                </button>
-              </div>
+              {activeAmount >= 10 && (
+                <div className="text-center pt-2 animate-fade-in-up">
+                  <button
+                    onClick={handleContribute}
+                    disabled={isLoading}
+                    className="inline-block px-8 py-2.5 border border-[var(--color-charcoal)] text-[var(--color-charcoal)] text-xs tracking-[0.15em] uppercase hover:bg-[var(--color-charcoal)] hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[var(--color-charcoal)]"
+                  >
+                    {isLoading ? "Processing..." : `Contribute R${activeAmount.toLocaleString()}`}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Footer Note */}

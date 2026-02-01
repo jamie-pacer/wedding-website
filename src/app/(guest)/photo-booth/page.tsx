@@ -408,9 +408,9 @@ export default function LiveMomentsPage() {
                 <div className="w-1.5 h-1.5 bg-[var(--color-dusty-rose)]/60 rotate-45"></div>
                 <div className="h-px w-16 bg-[var(--color-dusty-rose)]/40"></div>
               </div>
-              <p className="text-[var(--color-warm-gray)] text-lg tracking-wide max-w-xl mx-auto">
-                Share your favourite moments from the lead up to and during our special day. 
-                Snap a photo or upload from your gallery!
+              <p className="text-[var(--color-warm-gray)] leading-relaxed max-w-xl mx-auto">
+                Share your favourite moments from the lead up to and during the wedding! 
+                Snap a photo or upload from your gallery.
               </p>
             </div>
 
@@ -419,9 +419,9 @@ export default function LiveMomentsPage() {
             {/* Camera Capture */}
             <button
               onClick={() => cameraInputRef.current?.click()}
-              className="flex items-center justify-center gap-2 px-6 py-4 bg-[var(--color-dusty-blue)] text-white rounded-xl hover:bg-[var(--color-slate-blue)] transition-colors font-medium"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 border border-[var(--color-charcoal)] text-[var(--color-charcoal)] text-xs tracking-[0.2em] uppercase hover:bg-[var(--color-charcoal)] hover:text-white transition-all duration-300"
             >
-              <Camera className="w-5 h-5" />
+              <Camera className="w-4 h-4" />
               Take Photo
             </button>
             <input
@@ -436,9 +436,9 @@ export default function LiveMomentsPage() {
             {/* Gallery Upload */}
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center justify-center gap-2 px-6 py-4 border-2 border-[var(--color-dusty-rose)] text-[var(--color-dusty-rose)] rounded-xl hover:bg-[var(--color-dusty-rose)]/10 transition-colors font-medium"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 border border-[var(--color-charcoal)] text-[var(--color-charcoal)] text-xs tracking-[0.2em] uppercase hover:bg-[var(--color-charcoal)] hover:text-white transition-all duration-300"
             >
-              <Upload className="w-5 h-5" />
+              <Upload className="w-4 h-4" />
               Upload Photo
             </button>
             <input

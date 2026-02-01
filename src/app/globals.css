@@ -152,6 +152,17 @@ button:disabled, .btn-primary:disabled, .btn-secondary:disabled {
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-scale-out {
   animation: scaleOut 1.5s ease-out both;
 }
@@ -162,6 +173,10 @@ button:disabled, .btn-primary:disabled, .btn-secondary:disabled {
 
 .animate-float-in {
   animation: floatIn 1s ease-out both;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out both;
 }
 
 @keyframes confetti-fall {

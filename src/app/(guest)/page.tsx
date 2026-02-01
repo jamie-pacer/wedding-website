@@ -127,14 +127,14 @@ export default function HomePage() {
               </h2>
               <div className="floral-divider w-24"></div>
               <p className="text-[var(--color-warm-gray)] leading-relaxed">
-                From the moment our paths crossed, we knew there was something special 
-                between us. Through laughter, adventures, and countless memories, 
-                our love has blossomed into something beautiful.
+                Since we met in school, our paths have intertwined, growing closer and closer. 
+                With a shared love of the outdoors, a new hike, a good game of chess, amongst 
+                a million other things, we have grown to adore every moment we get together.
               </p>
               <p className="text-[var(--color-warm-gray)] leading-relaxed">
-                Now, we&apos;re ready to take the next step in our journey together, 
-                and we couldn&apos;t imagine celebrating this milestone without you, 
-                our cherished friends and family.
+                We so look forward to this next step in our story, our journey together, 
+                and we couldn&apos;t imagine celebrating it without you, our cherished 
+                friends and family.
               </p>
               <p className=" text-xl text-[var(--color-slate-blue)]">
                 We can&apos;t wait to see you there!

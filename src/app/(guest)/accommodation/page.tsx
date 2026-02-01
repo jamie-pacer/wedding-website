@@ -32,16 +32,11 @@ export default function AccommodationPage() {
                 <div className="w-1.5 h-1.5 bg-[var(--color-dusty-rose)]/60 rotate-45"></div>
                 <div className="h-px w-16 bg-[var(--color-dusty-rose)]/40"></div>
               </div>
-            <p className="text-[var(--color-warm-gray)] leading-relaxed max-w-xl mx-auto mb-6">
-              Our venue, <span className="text-[var(--color-charcoal)] font-medium">Die Woud</span>, is 
-              nestled in the beautiful Caledon countryside, about 1.5 hours from Cape Town. 
-              If travelling from Cape Town, you can{" "}
-              <Link href="/transport" className="text-[var(--color-slate-blue)] hover:text-[var(--color-dusty-blue)] underline">
-                book one of our shuttles here
-              </Link>.
-            </p>
             <p className="text-[var(--color-warm-gray)] leading-relaxed max-w-xl mx-auto mb-8">
-              If you would prefer to stay locally, we <span className="text-[var(--color-charcoal)] font-medium">highly recommend using our pre-filtered Airbnb search</span> or our carefully selected <span className="text-[var(--color-charcoal)] font-medium">accommodation options</span> below. We will be sharing more information on transport options for the surrounding areas shortly.
+              Our venue, <span className="text-[var(--color-charcoal)] font-medium">Die Woud</span>, is 
+              about 1.5 hours from Cape Town. We have put together a pre-filtered Airbnb search and created 
+              a map with accommodation suggestions to make finding a stay easier. We will also be sharing 
+              more information on transport options for the surrounding areas shortly.
             </p>
           </div>
 

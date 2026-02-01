@@ -32,8 +32,7 @@ export default function PhotographyPage() {
                 <div className="h-px w-16 bg-[var(--color-dusty-rose)]/40"></div>
               </div>
               <p className="text-[var(--color-warm-gray)] leading-relaxed max-w-xl mx-auto">
-                After our special day, we&apos;ll share all the beautiful moments 
-                captured by our photographer here.
+                We&apos;ll share all the photos captured by our photographer here after the wedding.
               </p>
             </div>
 
