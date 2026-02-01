@@ -58,10 +58,10 @@ export default function RegistrySuccessPage() {
                 Back to Fund
               </Link>
               <Link 
-                href="/"
+                href="/accommodation"
                 className="px-6 py-2.5 text-xs tracking-[0.15em] uppercase border border-[var(--color-charcoal)] text-[var(--color-charcoal)] hover:bg-[var(--color-charcoal)] hover:text-white transition-colors"
               >
-                Return Home
+                Go to Accommodation
               </Link>
             </div>
           </div>
