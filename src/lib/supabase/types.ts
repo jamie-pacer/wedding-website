@@ -8,6 +8,7 @@ export type { Database, Tables, TablesInsert, TablesUpdate };
 export type Guest = Tables<"guests">;
 export type RSVP = Tables<"rsvps">;
 export type RSVPStats = Tables<"rsvp_stats">;
+export type Contribution = Tables<"contributions">;
 
 // Additional guest type for JSONB field
 export interface AdditionalGuest {
