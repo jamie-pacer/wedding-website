@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Lato, Great_Vibes } from "next/font/google";
+import { Playfair_Display, Lato, Great_Vibes, Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -20,6 +20,12 @@ const lato = Lato({
   variable: "--font-lato",
   subsets: ["latin"],
   weight: ["300", "400", "700"],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
   display: "swap",
 });
 
@@ -47,7 +53,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${orangeSquash.variable} ${playfair.variable} ${lato.variable} ${greatVibes.variable} antialiased`}>
+      <body className={`${orangeSquash.variable} ${playfair.variable} ${lato.variable} ${inter.variable} ${greatVibes.variable} antialiased`}>
         {children}
       </body>
     </html>

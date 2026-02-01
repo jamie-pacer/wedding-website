@@ -42,27 +42,21 @@ export type Database = {
       guests: {
         Row: {
           created_at: string | null
-          email: string
-          group_name: string
+          email: string | null
           id: string
           name: string
-          plus_one_allowed: boolean | null
         }
         Insert: {
           created_at?: string | null
-          email: string
-          group_name?: string
+          email?: string | null
           id?: string
           name: string
-          plus_one_allowed?: boolean | null
         }
         Update: {
           created_at?: string | null
-          email?: string
-          group_name?: string
+          email?: string | null
           id?: string
           name?: string
-          plus_one_allowed?: boolean | null
         }
         Relationships: []
       }

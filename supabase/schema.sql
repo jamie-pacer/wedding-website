@@ -5,9 +5,7 @@ CREATE TABLE IF NOT EXISTS guests (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
-  group_name TEXT NOT NULL DEFAULT 'General',
-  plus_one_allowed BOOLEAN DEFAULT false
+  email TEXT
 );
 
 -- RSVPs table (for tracking responses)
@@ -28,8 +26,7 @@ CREATE TABLE IF NOT EXISTS rsvps (
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_rsvps_email ON rsvps(email);
 CREATE INDEX IF NOT EXISTS idx_rsvps_attending ON rsvps(attending);
-CREATE INDEX IF NOT EXISTS idx_guests_email ON guests(email);
-CREATE INDEX IF NOT EXISTS idx_guests_group ON guests(group_name);
+CREATE INDEX IF NOT EXISTS idx_guests_name ON guests(name);
 
 -- Row Level Security (RLS) Policies
 

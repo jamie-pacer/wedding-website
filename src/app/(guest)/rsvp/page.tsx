@@ -253,28 +253,60 @@ export default function RSVPPage() {
       .update({ email: formData.email })
       .eq("id", selectedGuest.id);
 
-    // Create RSVP record for primary guest
-    const { error: insertError } = await supabase.from("rsvps").insert({
-      guest_id: selectedGuest.id,
-      name: selectedGuest.name,
-      email: formData.email,
-      attending: formData.attending,
-      guest_count: 1 + formData.additionalGuests.length,
-      dietary_requirements: formData.dietaryRequirements || null,
-      song_request: formData.songRequest || null,
-      message: formData.message || null,
-      additional_guests: JSON.parse(JSON.stringify(formData.additionalGuests)),
-    });
+    // Build RSVP records for primary guest and all additional guests
+    const rsvpRecords = [
+      // Primary guest RSVP
+      {
+        guest_id: selectedGuest.id,
+        name: selectedGuest.name,
+        email: formData.email,
+        attending: formData.attending,
+        guest_count: 1 + formData.additionalGuests.length,
+        dietary_requirements: formData.dietaryRequirements || null,
+        song_request: formData.songRequest || null,
+        message: formData.message || null,
+        additional_guests: JSON.parse(JSON.stringify(formData.additionalGuests)),
+      },
+      // Additional guests RSVPs (same attending status, their own dietary requirements)
+      ...formData.additionalGuests.map((guest) => ({
+        guest_id: guest.id,
+        name: guest.name,
+        email: formData.email, // Use primary guest's email as contact
+        attending: formData.attending,
+        guest_count: 1,
+        dietary_requirements: guest.dietaryRequirements || null,
+        song_request: null,
+        message: null,
+        additional_guests: null,
+      })),
+    ];
+
+    // Insert all RSVP records
+    const { error: insertError } = await supabase.from("rsvps").insert(rsvpRecords);
 
     if (insertError) {
-      console.error("RSVP Error:", insertError);
-      setError("There was an error submitting your RSVP. Please try again.");
+      console.error("RSVP Error:", {
+        message: insertError.message,
+        code: insertError.code,
+        details: insertError.details,
+        hint: insertError.hint,
+      });
+      
+      // Check for duplicate RSVP (unique constraint violation)
+      if (insertError.code === "23505") {
+        setError("You have already submitted an RSVP. If you need to make changes, please contact us.");
+      } else {
+        setError("There was an error submitting your RSVP. Please try again.");
+      }
       setIsSubmitting(false);
       return;
     }
     
     setIsSubmitting(false);
     setIsSubmitted(true);
+    
+    // Scroll to top to show thank you message
+    window.scrollTo({ top: 0, behavior: "smooth" });
     
     // Trigger canvas-confetti animation
     if (formData.attending === "yes") {
