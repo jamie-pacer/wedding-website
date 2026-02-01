@@ -411,7 +411,7 @@ export default function RSVPPage() {
 
               {/* Action */}
               <a 
-                href="/gifts"
+                href="/registry"
                 className="inline-block px-8 py-2.5 border border-[var(--color-charcoal)] text-[var(--color-charcoal)] text-xs tracking-[0.2em] uppercase hover:bg-[var(--color-charcoal)] hover:text-white transition-all duration-300"
               >
                 Go to Gifts
