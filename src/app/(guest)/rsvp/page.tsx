@@ -1,15 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Heart, Send, Check, Minus, Search, UserPlus } from "lucide-react";
+import { Heart, Send, Check, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import confetti from "canvas-confetti";
-
-interface AdditionalGuest {
-  id: string;
-  name: string;
-  dietaryRequirements: string;
-}
 
 interface Guest {
   id: string;
@@ -26,18 +20,9 @@ export default function RSVPPage() {
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   
-  // Additional guest search state
-  const [additionalSearchQuery, setAdditionalSearchQuery] = useState("");
-  const [additionalSearchResults, setAdditionalSearchResults] = useState<Guest[]>([]);
-  const [isSearchingAdditional, setIsSearchingAdditional] = useState(false);
-  const [showAdditionalDropdown, setShowAdditionalDropdown] = useState(false);
-  const [showAddGuestInput, setShowAddGuestInput] = useState(false);
-  const additionalSearchRef = useRef<HTMLDivElement>(null);
-  
   const [formData, setFormData] = useState({
     email: "",
     attending: "",
-    additionalGuests: [] as AdditionalGuest[],
     dietaryRequirements: "",
     songRequest: "",
     message: "",
@@ -101,79 +86,17 @@ export default function RSVPPage() {
     return () => clearTimeout(debounce);
   }, [searchQuery, selectedGuest]);
 
-  // Search for additional guests
-  useEffect(() => {
-    const searchAdditionalGuests = async () => {
-      if (additionalSearchQuery.length < 2) {
-        setAdditionalSearchResults([]);
-        setShowAdditionalDropdown(false);
-        return;
-      }
-
-      const supabase = getSupabase();
-      if (!supabase) return;
-
-      setIsSearchingAdditional(true);
-      
-      // Get IDs of already selected guests to exclude them
-      const excludeIds = [
-        selectedGuest?.id,
-        ...formData.additionalGuests.map(g => g.id)
-      ].filter(Boolean);
-
-      let query = supabase
-        .from("guests")
-        .select("id, name, email")
-        .ilike("name", `%${additionalSearchQuery}%`)
-        .limit(5);
-
-      if (excludeIds.length > 0) {
-        query = query.not("id", "in", `(${excludeIds.join(",")})`);
-      }
-
-      const { data: guestsData, error: guestsError } = await query;
-
-      if (!guestsError && guestsData) {
-        // Check which guests have already submitted RSVPs
-        const guestIds = guestsData.map(g => g.id);
-        const { data: rsvpsData } = await supabase
-          .from("rsvps")
-          .select("guest_id")
-          .in("guest_id", guestIds);
-
-        const rsvpGuestIds = new Set(rsvpsData?.map(r => r.guest_id) || []);
-        
-        // Add hasRsvp flag to each guest
-        const guestsWithRsvpStatus = guestsData.map(guest => ({
-          ...guest,
-          hasRsvp: rsvpGuestIds.has(guest.id)
-        }));
-
-        setAdditionalSearchResults(guestsWithRsvpStatus);
-        setShowAdditionalDropdown(true);
-      }
-      setIsSearchingAdditional(false);
-    };
-
-    const debounce = setTimeout(searchAdditionalGuests, 300);
-    return () => clearTimeout(debounce);
-  }, [additionalSearchQuery, selectedGuest, formData.additionalGuests]);
-
-  // Close dropdowns when clicking outside or pressing Escape
+  // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
-      }
-      if (additionalSearchRef.current && !additionalSearchRef.current.contains(event.target as Node)) {
-        setShowAdditionalDropdown(false);
       }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setShowDropdown(false);
-        setShowAdditionalDropdown(false);
       }
     };
 
@@ -194,26 +117,12 @@ export default function RSVPPage() {
     }
   };
 
-  const handleSelectAdditionalGuest = (guest: Guest) => {
-    setFormData({
-      ...formData,
-      additionalGuests: [
-        ...formData.additionalGuests,
-        { id: guest.id, name: guest.name, dietaryRequirements: "" }
-      ],
-    });
-    setAdditionalSearchQuery("");
-    setShowAdditionalDropdown(false);
-    setShowAddGuestInput(false);
-  };
-
   const handleClearSelection = () => {
     setSelectedGuest(null);
     setSearchQuery("");
     setFormData({
       email: "",
       attending: "",
-      additionalGuests: [],
       dietaryRequirements: "",
       songRequest: "",
       message: "",
@@ -253,36 +162,21 @@ export default function RSVPPage() {
       .update({ email: formData.email })
       .eq("id", selectedGuest.id);
 
-    // Build RSVP records for primary guest and all additional guests
-    const rsvpRecords = [
-      // Primary guest RSVP
-      {
-        guest_id: selectedGuest.id,
-        name: selectedGuest.name,
-        email: formData.email,
-        attending: formData.attending,
-        guest_count: 1 + formData.additionalGuests.length,
-        dietary_requirements: formData.dietaryRequirements || null,
-        song_request: formData.songRequest || null,
-        message: formData.message || null,
-        additional_guests: JSON.parse(JSON.stringify(formData.additionalGuests)),
-      },
-      // Additional guests RSVPs (same attending status, their own dietary requirements)
-      ...formData.additionalGuests.map((guest) => ({
-        guest_id: guest.id,
-        name: guest.name,
-        email: formData.email, // Use primary guest's email as contact
-        attending: formData.attending,
-        guest_count: 1,
-        dietary_requirements: guest.dietaryRequirements || null,
-        song_request: null,
-        message: null,
-        additional_guests: null,
-      })),
-    ];
+    // Build RSVP record
+    const rsvpRecord = {
+      guest_id: selectedGuest.id,
+      name: selectedGuest.name,
+      email: formData.email,
+      attending: formData.attending,
+      guest_count: 1,
+      dietary_requirements: formData.dietaryRequirements || null,
+      song_request: formData.songRequest || null,
+      message: formData.message || null,
+      additional_guests: null,
+    };
 
-    // Insert all RSVP records
-    const { error: insertError } = await supabase.from("rsvps").insert(rsvpRecords);
+    // Insert RSVP record
+    const { error: insertError } = await supabase.from("rsvps").insert(rsvpRecord);
 
     if (insertError) {
       console.error("RSVP Error:", {
@@ -339,22 +233,6 @@ export default function RSVPPage() {
       frame();
     }
   };
-
-  const removeGuest = (index: number) => {
-    const newGuests = formData.additionalGuests.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      additionalGuests: newGuests,
-    });
-  };
-
-  const updateGuestDietary = (index: number, value: string) => {
-    const newGuests = [...formData.additionalGuests];
-    newGuests[index] = { ...newGuests[index], dietaryRequirements: value };
-    setFormData({ ...formData, additionalGuests: newGuests });
-  };
-
-  const totalGuests = 1 + formData.additionalGuests.length;
 
   // Get missing required fields for tooltip
   const getMissingFields = () => {
@@ -623,130 +501,9 @@ export default function RSVPPage() {
               </div>
             </fieldset>
 
-            {/* Additional Guests - Only show if attending */}
+            {/* Additional fields - Only show if attending */}
             {formData.attending === "yes" && (
               <>
-                {/* Others in Party */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-[var(--color-charcoal)] font-medium">
-                      Others in Your Party
-                    </label>
-                    <span className="text-sm text-[var(--color-text-light)]">
-                      Total: {totalGuests} {totalGuests === 1 ? "guest" : "guests"}
-                    </span>
-                  </div>
-                  
-                  <p className="text-sm text-[var(--color-warm-gray)]">
-                    RSVPing for others on the guest list? Add them below.
-                  </p>
-                  
-                  {/* Added guests */}
-                  {formData.additionalGuests.map((guest, index) => (
-                    <div key={guest.id} className="p-5 border-2 border-[var(--color-light-gray)] bg-[var(--color-cream)]/30 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-[var(--color-charcoal)] text-lg">
-                          {guest.name}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeGuest(index)}
-                          className="text-[var(--color-dusty-rose)] hover:text-[var(--color-charcoal)] focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 rounded transition-colors"
-                          aria-label={`Remove ${guest.name}`}
-                        >
-                          <Minus className="w-5 h-5" />
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        value={guest.dietaryRequirements}
-                        onChange={(e) => updateGuestDietary(index, e.target.value)}
-                        className="w-full px-4 py-2.5 border-2 border-[var(--color-light-gray)] bg-white focus:border-[var(--color-dusty-rose)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 transition-colors leading-normal"
-                        placeholder="Dietary requirements (if any)"
-                        aria-label={`Dietary requirements for ${guest.name}`}
-                      />
-                    </div>
-                  ))}
-
-                  {/* Add guest search */}
-                  {showAddGuestInput ? (
-                    <div className="space-y-2" ref={additionalSearchRef}>
-                      <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-warm-gray)]" />
-                        <input
-                          type="text"
-                          value={additionalSearchQuery}
-                          onChange={(e) => setAdditionalSearchQuery(e.target.value)}
-                          className="w-full pl-12 pr-4 py-2.5 border-2 border-[var(--color-light-gray)] bg-white focus:border-[var(--color-dusty-rose)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 transition-colors leading-normal"
-                          placeholder="Search for guest..."
-                          autoFocus
-                          aria-label="Search for additional guest"
-                          aria-expanded={showAdditionalDropdown}
-                          aria-autocomplete="list"
-                          autoComplete="off"
-                        />
-                        {isSearchingAdditional && (
-                          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                            <div className="w-5 h-5 border-2 border-[var(--color-dusty-blue)]/30 border-t-[var(--color-dusty-blue)] rounded-full animate-spin"></div>
-                          </div>
-                        )}
-                        
-                        {/* Dropdown Results - Overlay */}
-                        {showAdditionalDropdown && additionalSearchResults.length > 0 && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-[var(--color-light-gray)] shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden z-50 max-h-60 overflow-y-auto">
-                            {additionalSearchResults.map((guest) => (
-                              guest.hasRsvp ? (
-                                <div key={guest.id} className="w-full px-5 py-3 flex items-center justify-between border-b border-[var(--color-light-gray)]/50 last:border-b-0">
-                                  <span className="font-medium text-[var(--color-text-light)]">{guest.name}</span>
-                                  <span className="text-xs text-[var(--color-text-light)] italic">RSVP Sent</span>
-                                </div>
-                              ) : (
-                                <button
-                                  key={guest.id}
-                                  type="button"
-                                  onClick={() => handleSelectAdditionalGuest(guest)}
-                                  className="w-full px-5 py-3 text-left hover:bg-[var(--color-cream)]/50 transition-colors border-b border-[var(--color-light-gray)]/50 last:border-b-0"
-                                >
-                                  <span className="font-medium text-[var(--color-charcoal)]">{guest.name}</span>
-                                </button>
-                              )
-                            ))}
-                          </div>
-                        )}
-
-                        {/* No results message - Overlay */}
-                        {showAdditionalDropdown && additionalSearchQuery.length >= 2 && additionalSearchResults.length === 0 && !isSearchingAdditional && (
-                          <div className="absolute top-full left-0 right-0 mt-1 p-4 border-2 border-[var(--color-light-gray)] bg-[var(--color-cream)]/30 text-center z-50">
-                            <p className="text-sm text-[var(--color-warm-gray)]">
-                              No guests found matching &ldquo;{additionalSearchQuery}&rdquo;
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAddGuestInput(false);
-                          setAdditionalSearchQuery("");
-                        }}
-                        className="text-sm text-[var(--color-text-light)] hover:text-[var(--color-charcoal)]"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowAddGuestInput(true)}
-                      className="w-full py-4 border-2 border-dashed border-[var(--color-light-gray)] text-[var(--color-warm-gray)] hover:border-[var(--color-dusty-rose)]/50 hover:text-[var(--color-dusty-rose)] transition-colors flex items-center justify-center gap-2 bg-white"
-                    >
-                      <UserPlus className="w-5 h-5" />
-                      Add Another Guest
-                    </button>
-                  )}
-                </div>
-
                 {/* Dietary Requirements */}
                 <div className="space-y-2">
                   <label 
@@ -801,7 +558,7 @@ export default function RSVPPage() {
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 className="w-full px-4 py-2.5 border-2 border-[var(--color-light-gray)] bg-white focus:border-[var(--color-dusty-rose)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-dusty-rose)]/20 transition-colors resize-none text-[var(--color-charcoal)] placeholder:text-[var(--color-warm-gray)]/60 leading-normal"
-                placeholder="Share your well wishes or let us know if there's anything we should know..."
+                placeholder="Share your wishes or anything we may need to know..."
                 aria-label="Leave us a message"
               />
             </div>
