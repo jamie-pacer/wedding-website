@@ -83,7 +83,7 @@ export default function DashboardPage() {
             song_request: rsvp.song_request || undefined,
             message: rsvp.message || undefined,
             guest_count: rsvp.guest_count || 1,
-            created_at: rsvp.created_at
+            created_at: rsvp.created_at ?? undefined
           };
         }
         
