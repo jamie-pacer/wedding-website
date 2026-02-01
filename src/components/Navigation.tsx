@@ -75,7 +75,7 @@ export default function Navigation() {
           isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
         }`}
       >
-        <div className="bg-[var(--color-champagne)] py-3 rounded-b-[2rem] shadow-xl">
+        <div className="bg-[var(--color-champagne)] py-3 rounded-b-xl shadow-xl">
           {navLinks.map((link, index) => (
             <Link
               key={link.href}
