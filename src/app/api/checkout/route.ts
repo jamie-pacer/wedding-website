@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+// Initialize Stripe with the secret key
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("STRIPE_SECRET_KEY is not set in environment variables");
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2024-12-18.acacia",
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,6 +20,11 @@ export async function POST(request: NextRequest) {
         { error: "Minimum contribution is R10" },
         { status: 400 }
       );
+    }
+
+    // Validate BASE_URL is set
+    if (!process.env.NEXT_PUBLIC_BASE_URL) {
+      throw new Error("NEXT_PUBLIC_BASE_URL is not set in environment variables");
     }
 
     // Create Stripe checkout session
@@ -39,6 +51,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         contributorName: contributorName || "Anonymous",
         message: message || "",
+        amount: amount.toString(),
       },
     });
 
