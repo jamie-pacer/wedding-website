@@ -183,7 +183,7 @@ export default function RegistryPage() {
             {/* Footer Note */}
             <div className="text-center mt-8 pt-6 border-t border-[var(--color-light-gray)]">
               <p className="text-sm text-[var(--color-warm-gray)]">
-                All contributions are optional and deeply appreciated
+                All contributions are optional and deeply appreciated.
               </p>
             </div>
           </div>
