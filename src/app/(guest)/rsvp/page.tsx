@@ -478,7 +478,7 @@ export default function RSVPPage() {
                     required
                   />
                   <div className="w-full py-5 px-6 text-center border-2 border-[var(--color-light-gray)] bg-white cursor-pointer transition-all peer-checked:border-[var(--color-sage)] peer-checked:bg-[var(--color-cream)]/30 hover:border-[var(--color-sage)]/50 peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--color-dusty-rose)]/20">
-                    <span className="font-medium text-[var(--color-charcoal)] tracking-wide">Joyfully Accept</span>
+                    <span className="font-medium text-[var(--color-charcoal)] tracking-wide">Accept</span>
                   </div>
                 </label>
                 <label className="flex-1">
@@ -492,10 +492,10 @@ export default function RSVPPage() {
                       setError(null);
                     }}
                     className="sr-only peer"
-                    aria-label="Regretfully Decline"
+                    aria-label="Decline"
                   />
                   <div className="w-full py-5 px-6 text-center border-2 border-[var(--color-light-gray)] bg-white cursor-pointer transition-all peer-checked:border-[var(--color-dusty-rose)] peer-checked:bg-[var(--color-cream)]/30 hover:border-[var(--color-dusty-rose)]/50 peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--color-dusty-rose)]/20">
-                    <span className="font-medium text-[var(--color-charcoal)] tracking-wide">Regretfully Decline</span>
+                    <span className="font-medium text-[var(--color-charcoal)] tracking-wide">Decline</span>
                   </div>
                 </label>
               </div>
