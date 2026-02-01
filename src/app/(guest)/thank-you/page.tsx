@@ -1,10 +1,30 @@
+"use client";
+
 import { Heart, Check } from "lucide-react";
 import Link from "next/link";
-
-// Enable static generation for better performance
-export const dynamic = 'force-static';
+import { useEffect } from "react";
 
 export default function ThankYouPage() {
+  useEffect(() => {
+    // Create confetti elements
+    const confettiCount = 50;
+    const colors = ['#D4A5A5', '#B5C4B1', '#8BA8B8', '#E8C4C4', '#9DB4A0'];
+    
+    for (let i = 0; i < confettiCount; i++) {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = Math.random() * 100 + '%';
+      confetti.style.animationDelay = Math.random() * 3 + 's';
+      confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.opacity = (Math.random() * 0.5 + 0.5).toString();
+      document.body.appendChild(confetti);
+      
+      // Remove confetti after animation
+      setTimeout(() => confetti.remove(), 5000);
+    }
+  }, []);
+
   return (
     <div 
       className="min-h-screen px-6 pt-28 pb-16"
