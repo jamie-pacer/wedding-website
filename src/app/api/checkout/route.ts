@@ -1,17 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-// Initialize Stripe with the secret key
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set in environment variables");
-}
+// Lazy initialization to avoid build-time errors
+let stripe: Stripe | null = null;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-12-15.clover",
-});
+function getStripe() {
+  if (!stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error("STRIPE_SECRET_KEY is not set in environment variables");
+    }
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-12-15.clover",
+    });
+  }
+  return stripe;
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const stripeClient = getStripe();
     const { amount, contributorName, message } = await request.json();
 
     // Validate amount (minimum R10)
@@ -35,7 +42,7 @@ export async function POST(request: NextRequest) {
     console.log("Creating checkout session for amount:", amount);
 
     // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
+    const session = await stripeClient.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
