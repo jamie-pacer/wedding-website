@@ -38,7 +38,7 @@ const greatVibes = Great_Vibes({
 
 export const metadata: Metadata = {
   title: "Natalie & James | Wedding",
-  description: "Join us in celebrating the wedding of Natalie Lacey and James Shuttleworth on 24th October 2026 at Die Woud, Caledon.",
+  description: "Join us in celebrating the wedding of Natalie Lacey and James \"Jamie\" Shuttleworth on 24 October 2026 at Die Woud, Caledon.",
   keywords: ["wedding", "Natalie Lacey", "James Shuttleworth", "Die Woud", "Caledon"],
   icons: {
     icon: "/site-favicon.png",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Natalie & James | Wedding",
-    description: "Join us in celebrating the wedding of Natalie Lacey and James Shuttleworth on 24th October 2026 at Die Woud, Caledon.",
+    description: "Join us in celebrating the wedding of Natalie Lacey and James \"Jamie\" Shuttleworth on 24 October 2026 at Die Woud, Caledon.",
     url: "https://nataliejames.wedding",
     siteName: "Natalie & James Wedding",
     images: [
