@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     siteName: "Natalie & James Wedding",
     images: [
       {
-        url: "https://nataliejames.wedding/background-1.JPG",
+        url: "https://nataliejames.wedding/social-preview.png",
         width: 1200,
         height: 630,
       },
