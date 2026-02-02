@@ -44,6 +44,20 @@ export const metadata: Metadata = {
     icon: "/site-favicon.png",
     apple: "/site-favicon.png",
   },
+  openGraph: {
+    title: "Natalie & James | Wedding",
+    description: "Join us in celebrating the wedding of Natalie Lacey and James Shuttleworth on 24th October 2026 at Die Woud, Caledon.",
+    url: "https://nataliejames.wedding",
+    siteName: "Natalie & James Wedding",
+    images: [
+      {
+        url: "https://nataliejames.wedding/background-1.JPG",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    type: "website",
+  },
 };
 
 export default function RootLayout({
