@@ -37,6 +37,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [guests, setGuests] = useState<GuestWithRsvp[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "accepted" | "declined" | "waiting">("all");
   const [selectedGuest, setSelectedGuest] = useState<GuestWithRsvp | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newGuest, setNewGuest] = useState({ name: "", email: "" });
@@ -114,7 +115,8 @@ export default function DashboardPage() {
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch = (guest.name || '').toLowerCase().includes(searchLower) ||
       (guest.email || '').toLowerCase().includes(searchLower);
-    return matchesSearch;
+    const matchesStatus = statusFilter === "all" || guest.status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
   const handleAddGuest = async (e: React.FormEvent) => {
@@ -242,15 +244,31 @@ export default function DashboardPage() {
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           {/* Search Bar */}
           <div className="p-4 border-b border-slate-200">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search guests..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-slate-300 focus:ring-0 focus:outline-none transition-colors"
-              />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative w-full sm:max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search guests..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-slate-300 focus:ring-0 focus:outline-none transition-colors"
+                />
+              </div>
+              <div className="relative w-full sm:w-48">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as "all" | "accepted" | "declined" | "waiting")}
+                  className="w-full appearance-none px-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-700 focus:bg-white focus:border-slate-300 focus:ring-0 focus:outline-none transition-colors"
+                  aria-label="Filter by RSVP status"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="declined">Declined</option>
+                  <option value="waiting">Awaiting</option>
+                </select>
+                <ChevronRight className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rotate-90" />
+              </div>
             </div>
           </div>
 
