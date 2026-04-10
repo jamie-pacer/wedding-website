@@ -12,6 +12,7 @@ import {
   X,
   LogOut,
   ChevronRight,
+  ArrowUpDown,
   Mail,
   Music,
   UtensilsCrossed,
@@ -38,6 +39,7 @@ export default function DashboardPage() {
   const [guests, setGuests] = useState<GuestWithRsvp[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "accepted" | "declined" | "waiting">("all");
+  const [sortOrder, setSortOrder] = useState<"name" | "recent_confirmations">("name");
   const [selectedGuest, setSelectedGuest] = useState<GuestWithRsvp | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newGuest, setNewGuest] = useState({ name: "", email: "" });
@@ -111,13 +113,31 @@ export default function DashboardPage() {
     waiting: guests.filter(g => g.status === 'waiting').length,
   };
 
-  const filteredGuests = guests.filter((guest) => {
-    const searchLower = searchQuery.toLowerCase();
-    const matchesSearch = (guest.name || '').toLowerCase().includes(searchLower) ||
-      (guest.email || '').toLowerCase().includes(searchLower);
-    const matchesStatus = statusFilter === "all" || guest.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredGuests = guests
+    .filter((guest) => {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = (guest.name || '').toLowerCase().includes(searchLower) ||
+        (guest.email || '').toLowerCase().includes(searchLower);
+      const matchesStatus = statusFilter === "all" || guest.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sortOrder === "recent_confirmations") {
+        const aAccepted = a.status === "accepted";
+        const bAccepted = b.status === "accepted";
+
+        if (aAccepted && !bAccepted) return -1;
+        if (!aAccepted && bAccepted) return 1;
+
+        if (aAccepted && bAccepted) {
+          const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+          if (aTime !== bTime) return bTime - aTime;
+        }
+      }
+
+      return (a.name || '').localeCompare(b.name || '');
+    });
 
   const handleAddGuest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,6 +171,18 @@ export default function DashboardPage() {
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();
+  };
+
+  const formatRsvpReceivedAt = (timestamp?: string) => {
+    if (!timestamp) return "—";
+
+    const parsedDate = new Date(timestamp);
+    if (Number.isNaN(parsedDate.getTime())) return "—";
+
+    return new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(parsedDate);
   };
 
   return (
@@ -269,6 +301,19 @@ export default function DashboardPage() {
                 </select>
                 <ChevronRight className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rotate-90" />
               </div>
+              <div className="relative w-full sm:w-64">
+                <ArrowUpDown className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value as "name" | "recent_confirmations")}
+                  className="w-full appearance-none pl-10 pr-9 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-700 focus:bg-white focus:border-slate-300 focus:ring-0 focus:outline-none transition-colors"
+                  aria-label="Sort guests"
+                >
+                  <option value="name">Sort: Name (A-Z)</option>
+                  <option value="recent_confirmations">Sort: Most recent confirmations</option>
+                </select>
+                <ChevronRight className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rotate-90" />
+              </div>
             </div>
           </div>
 
@@ -293,7 +338,8 @@ export default function DashboardPage() {
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Guest</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Dietary</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Song Request</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">RSVP Received</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden xl:table-cell">Song Request</th>
                     <th className="w-10"></th>
                   </tr>
                 </thead>
@@ -335,6 +381,9 @@ export default function DashboardPage() {
                         <span className="text-sm text-slate-600">{guest.dietary_requirements || '—'}</span>
                       </td>
                       <td className="px-6 py-4 hidden lg:table-cell">
+                        <span className="text-sm text-slate-600 whitespace-nowrap">{formatRsvpReceivedAt(guest.created_at)}</span>
+                      </td>
+                      <td className="px-6 py-4 hidden xl:table-cell">
                         <span className="text-sm text-slate-600 truncate block max-w-[200px]">{guest.song_request || '—'}</span>
                       </td>
                       <td className="px-4 py-4">
@@ -402,6 +451,13 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </div>
+
+              {selectedGuest.created_at && (
+                <div className="p-3 bg-slate-50 rounded-lg">
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">RSVP Received</p>
+                  <p className="text-sm text-slate-900 mt-1">{formatRsvpReceivedAt(selectedGuest.created_at)}</p>
+                </div>
+              )}
 
               {/* Details */}
               {selectedGuest.dietary_requirements && (
